@@ -164,5 +164,5 @@ class MusicLinker(object):
     def album(self, album):
         return self.advanced(album = album)
 
-test = MusicLinker('music.db')
+test = MusicLinker('files\music.db')
 test.advanced(title='bokura', artist='nico')
