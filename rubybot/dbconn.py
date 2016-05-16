@@ -33,60 +33,6 @@ class MusicLinker(object):
     def __init__(self, filename):
         self.db = sqlite3.connect(filename)
         self.cursor = self.db.cursor()
-    
-    #remix = 0 -> exclude remixes (like solo mixes)
-    #remix = 1 -> include remixes
-    def search(self, search, terms, exclusive = 1, remix = 1):
-        
-        for word in search:
-             if word not in columns:
-                raise ValueError('Invalid search targets!')
-
-        if len(terms) != len(columns):
-            raise ValueError('Invalid terms array!')
-        
-        values = list()
-        sql = sql_start
-        sql += search[0]
-        if len(search) > 1:
-            for x in range(0, len(search) - 1):
-                sql = ','.join([sql, search[x+1]])
-                
-        sql = ' '.join([sql, sql_from]) + table_name + ' '
-        #SELECT DISTINCT *,* FROM *
-        sql += sql_search
-        for x in range(0, len(terms)):
-            if terms[x] is None:
-                continue
-
-            values.append('%' + terms[x] + '%')
-            sql += ''.join([columns[x] + ' ', sql_like])
-            sql += sql_param
-            if exclusive:
-                sql += sql_and + ' '
-            else:
-                sql += sql_or + ' '
-                
-        if not remix:        
-            if (sql.endswith('OR ')):
-                sql = sql[:len(sql) - 3] + 'AND '
-            sql += columns[5]
-            sql += ' ' + sql_null
-        else:
-            if (sql.endswith('OR ')):
-                sql = sql[:len(sql) - 3]
-            elif (sql.endswith('AND ')):
-                sql = sql[:len(sql) - 4]
-
-        sql += ' ' + sql_order
-        sql += columns[0] + ' '
-
-        sql += sql_end
-        print(sql)
-        print(tuple(values))
-        results = self.cursor.execute(sql, tuple(values))
-        data = results.fetchall()
-        return data
 
     def playlist_name(self, name):
         print(name)
@@ -166,3 +112,4 @@ class MusicLinker(object):
 
 test = MusicLinker('files\music.db')
 test.advanced(title='bokura', artist='nico')
+test.album('umiiro')
