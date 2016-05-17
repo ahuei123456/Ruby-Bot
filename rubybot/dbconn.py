@@ -21,8 +21,6 @@ music_table = 'music'
 playlist_table = 'playlist'
 p_columns = ['id', 'name', 'owner', 'song_id']
 
-#-id id, -t title, -a artist, -al album, -ln link, -rm parent (gib id), -tn track number
-#args = ['-id', '-t', '-a', '-al', '-ln', '-rm', '-tn', '-or']
 args = columns[:] + ['or']
 
 class MusicLinker(object):
@@ -76,8 +74,9 @@ class MusicLinker(object):
                         sql += sql_or
                     else:
                         sql += sql_and
+            
             #replace and/or and add null/not null
-            if flag_or:        
+            if not flag_remix:        
                 if (sql.endswith(sql_or)):
                     sql = sql[:len(sql) - 3] + sql_and
                 sql += columns[5]
@@ -109,7 +108,3 @@ class MusicLinker(object):
 
     def album(self, album):
         return self.advanced(album = album)
-
-test = MusicLinker('files\music.db')
-test.advanced(title='bokura', artist='nico')
-test.album('umiiro')
