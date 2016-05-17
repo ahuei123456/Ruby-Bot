@@ -14,22 +14,22 @@ class Restricted:
 
     @commands.command(pass_context = True, no_pm = True)
     async def title(self, ctx, *, title:str):
-        output = fix_input(title)
+        output = textparse.fix_input(title)
         await self.bot.say(textparse.title(output))
 
     @commands.command(pass_context = True, no_pm = True)
     async def code(self, ctx, *, code:str):
-        output = fix_input(code)
+        output = textparse.fix_input(code)
         await self.bot.say(textparse.code(output))
 
     @commands.command(pass_context = True, no_pm = True)
     async def album(self, ctx, *, album:str):
-        output = fix_input(album)
+        output = textparse.fix_input(album)
         await self.bot.say(textparse.album(output))
 
     @commands.command(pass_context = True, no_pm = True)
     async def adv(self, ctx, *, adv:str):
-        output = fix_input(adv)
+        output = textparse.fix_input(adv)
         await self.bot.say(str(output))
 
 class Qaz:
@@ -54,42 +54,7 @@ class Qaz:
     async def qaz(self, ctx):
         await self.bot.say(self.qaz_list[random.randrange(0, len(self.qaz_list))])
         
-def fix_input(raw):
-    text = raw.split()
-    output = []
-    build = ''
-    for x in range(0, len(text)):
-        string = text[x]
-        
-        if string in textparse.args:
-            build = build.strip()
-            if (len(build) > 0):
-                output.append(build)
-            output.append(string)
-            build = ''
-        elif len(build) == 0:
-            if not string.startswith('"'):
-                build += string
-            else:
-                # "food"
-                if string.endswith('"'):
-                    output.append(string[1:len(string) - 1])
-                else:
-                    build += ' ' + string[1:]
-        else:
-            if string.endswith('"'):
-                build += string[:len(string) - 1]
-                output.append(build.strip())
-                build = ''
-            else:
-                build += ' ' + string
-                
-        
-    if len(build) > 0:
-        output.append(build.strip().rstrip())
 
-    
-    return output
 
 bot = commands.Bot(command_prefix = commands.when_mentioned_or('~'), description = info )
 bot.add_cog(Restricted(bot))
