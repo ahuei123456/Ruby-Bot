@@ -97,7 +97,7 @@ class MusicLinker(object):
         
         results = self.cursor.execute(sql, tuple(values))
         data = results.fetchall()
-        print(data)
+        #print(data)
         return data
         
     def title(self, title):
