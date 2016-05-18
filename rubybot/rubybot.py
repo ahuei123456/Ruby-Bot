@@ -16,7 +16,7 @@ tbl_limit = 10
 
 codeblock = '```'
 
-class Restricted:
+class Music:
 
     def __init__(self, bot):
         self.bot = bot
@@ -139,7 +139,7 @@ class Qaz:
 
 
 bot = commands.Bot(command_prefix = commands.when_mentioned_or('~'), description = info )
-bot.add_cog(Restricted(bot))
+bot.add_cog(Music(bot))
 bot.add_cog(Qaz(bot, 'files\qaz.txt'))
 
 @bot.event
