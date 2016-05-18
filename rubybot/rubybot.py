@@ -18,23 +18,31 @@ class Restricted:
         output = textparse.fix_input(title)
         data = textparse.title(output)
         await self.playsong(data[0][4])
+        await asyncio.sleep(10)
+        await self.bot.delete_message(ctx.message)
 
     @commands.command(pass_context = True, no_pm = True)
     async def code(self, ctx, *, code:str):
         output = textparse.fix_input(code)
         data = textparse.code(output)
         await self.playsong(data[0][4])
+        await asyncio.sleep(10)
+        await self.bot.delete_message(ctx.message)
 
     @commands.command(pass_context = True, no_pm = True)
     async def album(self, ctx, *, album:str):
         output = textparse.fix_input(album)
         data = textparse.album(output)
         await self.playlist(self.getlinks(data))
+        await asyncio.sleep(10)
+        await self.bot.delete_message(ctx.message)
 
     @commands.command(pass_context = True, no_pm = True)
     async def adv(self, ctx, *, adv:str):
         output = textparse.fix_input(adv)
         await self.bot.say(str(output))
+        await asyncio.sleep(10)
+        await self.bot.delete_message(ctx.message)
 
     def getlinks(self, fulllist):
         links = list()
