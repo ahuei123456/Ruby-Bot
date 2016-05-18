@@ -11,11 +11,13 @@ class Restricted:
 
     def __init__(self, bot):
         self.bot = bot
+        self.song_play = '!play'
 
     @commands.command(pass_context = True, no_pm = True)
     async def title(self, ctx, *, title:str):
         output = textparse.fix_input(title)
-        await self.bot.say(textparse.title(output))
+        data = textparse.title(output)
+        await self.playsong(data[0][4])
 
     @commands.command(pass_context = True, no_pm = True)
     async def code(self, ctx, *, code:str):
@@ -31,6 +33,11 @@ class Restricted:
     async def adv(self, ctx, *, adv:str):
         output = textparse.fix_input(adv)
         await self.bot.say(str(output))
+
+    async def playsong(self, link):
+        msg = await self.bot.say(self.song_play + ' ' + link)
+        await asyncio.sleep(2)
+        await self.bot.delete_message(msg)
 
 class Qaz:
     def __init__(self, bot, filename):
