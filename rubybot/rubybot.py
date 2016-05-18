@@ -22,18 +22,32 @@ class Restricted:
     @commands.command(pass_context = True, no_pm = True)
     async def code(self, ctx, *, code:str):
         output = textparse.fix_input(code)
-        await self.bot.say(textparse.code(output))
+        data = textparse.code(output)
+        await self.playsong(data[0][4])
 
     @commands.command(pass_context = True, no_pm = True)
     async def album(self, ctx, *, album:str):
         output = textparse.fix_input(album)
-        await self.bot.say(textparse.album(output))
+        data = textparse.album(output)
+        await self.playlist(self.getlinks(data))
 
     @commands.command(pass_context = True, no_pm = True)
     async def adv(self, ctx, *, adv:str):
         output = textparse.fix_input(adv)
         await self.bot.say(str(output))
 
+    def getlinks(self, fulllist):
+        links = list()
+
+        for row in fulllist:
+            links.append(row[4])
+
+        return links
+    
+    async def playlist(self, linklist):
+        for link in linklist:
+            await self.playsong(link)
+    
     async def playsong(self, link):
         msg = await self.bot.say(self.song_play + ' ' + link)
         await asyncio.sleep(2)
