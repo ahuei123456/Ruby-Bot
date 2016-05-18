@@ -45,7 +45,7 @@ class Restricted:
     async def adv(self, ctx, *, adv:str):
         output = textparse.fix_input(adv)
         data = textparse.adv(output)
-        await self.playlist(self.getlinks(data))
+        await self.playlist(self.get_links(data))
         await asyncio.sleep(com_del_delay)
         await self.bot.delete_message(ctx.message)
 

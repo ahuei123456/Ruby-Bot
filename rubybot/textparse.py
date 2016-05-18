@@ -1,4 +1,5 @@
 import dbconn
+import random
 
 from dbconn import MusicLinker
 
@@ -27,7 +28,7 @@ def adv(data):
         elif data[x] in args:
             if args.index(data[x]) >= 8:
                 if data[x] == args[8]:
-                    count = int(data[x])
+                    saved_flag = data[x]
                 elif data[x] == args[9]:
                     flag_random = 1
                     flag_repeat = 1
@@ -40,7 +41,10 @@ def adv(data):
 
         else:
             if saved_flag != '':
-                fdata[dbconn.args[args.index(saved_flag)]] = data[x]
+                if saved_flag != args[8]:
+                    fdata[dbconn.args[args.index(saved_flag)]] = data[x]
+                else:
+                    count = int(data[x])
                 saved_flag = ''
     print(fdata)
     output = music.advanced(**fdata)
