@@ -27,7 +27,6 @@ class Music:
         output = textparse.fix_input(title)
         data = textparse.title(output)
         await self.process(ctx, data)
-        
 
     @commands.command(pass_context = True, no_pm = True)
     async def code(self, ctx, *, code:str):
@@ -117,26 +116,43 @@ class Music:
 class Qaz:
     def __init__(self, bot, filename):
         self.bot = bot
-        self.qaz_file = open(filename)
-        self.qaz_list = list()
+        self.filename = filename
+        self.qaz_file = open(self.filename, 'r')
+        self.qaz_list = dict()
         
         for line in self.qaz_file:
             data = line.split()
             qaz_post = ''
+            qaz_tag = ''
             
             for block in data:
                 if block.startswith('http'):
                     qaz_post += block + ' '
                 else:
-                    break
+                    qaz_tag += block + ' '
 
-            self.qaz_list.append(qaz_post)
+            self.qaz_list[qaz_tag.strip()] = qaz_post.strip()
+        self.qaz_file.close()
+        self.qaz_file = open(self.filename, 'a')
 
-    @commands.command(pass_context = True, no_pm = True)
+    @commands.group(pass_context=True, no_pm=True)
     async def qaz(self, ctx):
-        await self.bot.say(self.qaz_list[random.randrange(0, len(self.qaz_list))])
-        
+        if ctx.invoked_subcommand is None:
+            tags = list(self.qaz_list.keys())
+            await self.bot.say(self.qaz_list[tags[random.randrange(0, len(tags))]])
 
+    @qaz.command(pass_context = True, no_pm = True)
+    async def add(self, ctx, *msg:str):
+        data = textparse.fix_input(str(msg), None)
+        print(msg)
+        tag = data[1]
+        link = data[0]
+        if (tag not in list(self.qaz_list.keys())):
+            self.qaz_file.write('\n' + link + ' ' + tag)
+            self.qaz_list[tag] = link
+            await self.bot.say('Tag added successfully!')
+        else:
+            await self.bot.say('That tag already exists!')
 
 bot = commands.Bot(command_prefix = commands.when_mentioned_or('~'), description = info )
 bot.add_cog(Music(bot))

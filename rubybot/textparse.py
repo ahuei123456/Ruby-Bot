@@ -71,14 +71,16 @@ def randomize(rlist, repeat = 0, count = 1):
 
     return play
 
-def fix_input(raw):
+def fix_input(raw, special = args):
+    if special is None:
+        special = list()
     text = raw.split()
     output = []
     build = ''
     for x in range(0, len(text)):
         string = text[x]
         
-        if string in args:
+        if string in special:
             build = build.strip()
             if (len(build) > 0):
                 output.append(build)
@@ -95,7 +97,7 @@ def fix_input(raw):
                     build += ' ' + string[1:]
         else:
             if string.endswith('"'):
-                build += string[:len(string) - 1]
+                build += ' ' + string[:len(string) - 1]
                 output.append(build.strip())
                 build = ''
             else:
