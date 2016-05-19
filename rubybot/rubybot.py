@@ -24,24 +24,28 @@ class Music:
 
     @commands.command(pass_context = True, no_pm = True)
     async def title(self, ctx, *, title:str):
+        """Searches the music database for a song with a particular title and queues it."""
         output = textparse.fix_input(title)
         data = textparse.title(output)
         await self.process(ctx, data)
 
     @commands.command(pass_context = True, no_pm = True)
     async def code(self, ctx, *, code:str):
+        """Searches the music database for a song with a particular code and queues it."""
         output = textparse.fix_input(code)
         data = textparse.code(output)
         await self.process(ctx, data)
 
     @commands.command(pass_context = True, no_pm = True)
     async def album(self, ctx, *, album:str):
+        """Searches the music database for an album with a particular title and queues it."""
         output = textparse.fix_input(album)
         data = textparse.album(output)
         await self.process(ctx, data, len(data))
 
     @commands.command(pass_context = True, no_pm = True)
     async def adv(self, ctx, *, adv:str):
+        """Sekrit command do not use"""
         output = textparse.fix_input(adv)
         data = textparse.adv(output)
         await self.playlist(self.get_links(data))
@@ -137,7 +141,9 @@ class Qaz:
 
     @commands.group(pass_context=True, no_pm=True)
     async def qaz(self, ctx):
-        """Displays a random qaz quote"""
+        """Lets you save dank qaz quotes.
+If a subcommand is not called, a random qaz quote is displayed."""
+            
         if ctx.invoked_subcommand is None:
             tags = list(self.qaz_list.keys())
             await self.bot.say(self.qaz_list[tags[random.randrange(0, len(tags))]])
