@@ -14,6 +14,9 @@ def code(data):
 def album(data):
     return music.album(data[0])
 
+def albums(data):
+    return music.albums(data[0])
+
 def adv(data):
     print(data)
     fdata = dict()

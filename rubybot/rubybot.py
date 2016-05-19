@@ -26,7 +26,7 @@ class Music:
     async def title(self, ctx, *, title:str):
         """Searches the music database by title for a song.
 Queues it if a single matching song is found.
-If multiple songs match the search term, all the matching songs are displayed."""
+If multiple songs match the search term, an error is displayed."""
         output = textparse.fix_input(title)
         data = textparse.title(output)
         await self.process(ctx, data)
@@ -34,7 +34,8 @@ If multiple songs match the search term, all the matching songs are displayed.""
     @commands.command(pass_context = True, no_pm = True)
     async def code(self, ctx, *, code:str):
         """Searches the music database by code for a song.
-Queues it if a single matching song is found."""
+Queues it if a single matching song is found.
+If multiple songs match the search term, an error is displayed."""
         output = textparse.fix_input(code)
         data = textparse.code(output)
         await self.process(ctx, data)
@@ -42,10 +43,15 @@ Queues it if a single matching song is found."""
     @commands.command(pass_context = True, no_pm = True)
     async def album(self, ctx, *, album:str):
         """Searches the music database by title for an album.
-Queues all of it if a single matching album is found."""
+Queues all of it if a single matching album is found.
+If multiple songs match the search term, an album is displayed."""
         output = textparse.fix_input(album)
-        data = textparse.album(output)
-        await self.process(ctx, data, len(data))
+        albums = textparse.albums(output)
+        if len(albums) > 1:
+            await self.print_table(ctx, excess_results, albums, ('Album Name',), tbl_limit)
+        else:    
+            data = textparse.album(output)
+            await self.process(ctx, data, len(data))
 
     @commands.command(pass_context = True, no_pm = True)
     async def adv(self, ctx, *, adv:str):
@@ -71,46 +77,48 @@ Queues all of it if a single matching album is found."""
             info.append(row[:4])
 
         return info
-
+        
+    
     async def process(self, ctx, data, max_length = 1):
         if len(data) <= max_length:
             await self.playlist(self.get_links(data))
             await asyncio.sleep(com_del_delay)
         else:
-            del_later = list()
-            error = codeblock + excess_results
-            error += '\n'
-            if len(data) <= tbl_limit:
-                rows = self.strip_useless(data)
-                titles = ('Song ID', 'Song Title', 'Song Artist', 'Song Album')
-                table = [titles]
+            print_table(ctx, excess_results, self.strip_useless(data), ('Song Code', 'Song Title', 'Song Artist', 'Song Album'), tbl_limit)
 
-                for row in rows:
-                    table.append(row)
+    async def print_table(self, ctx, msg, data, titles, limit = tbl_limit):
+        del_later = list()
+        error = codeblock + msg
+        error += '\n'
+        if len(data) <= limit:
                 
-                output = texttable.print_table(table, 1997 - len(error))
-                for x in range(0, len(output)):
-                    if x == 0:
-                        error += output[x]
-                        error += codeblock
-                        msg = await self.bot.say(error)
-                        del_later.append(msg)
+            table = [titles]
+
+            for row in data:
+                table.append(row)
+                
+            output = texttable.print_table(table, 1997 - len(error))
+            for x in range(0, len(output)):
+                if x == 0:
+                    error += output[x]
+                    error += codeblock
+                    msg = await self.bot.say(error)
+                    del_later.append(msg)
                         
-                    else:
-                        error = codeblock + output[x] + codeblock
-                        msg = await self.bot.say(error)
-                        del_later.append(msg)
+                else:
+                    error = codeblock + output[x] + codeblock
+                    msg = await self.bot.say(error)
+                    del_later.append(msg)
                         
-                await asyncio.sleep(ann_del_delay)
-                for msg in del_later:
-                    await self.bot.delete_message(msg)
-            else:
-                error += codeblock
-                msg = await self.bot.say(error)
-                await asyncio.sleep(ann_del_delay)
+            await asyncio.sleep(ann_del_delay)
+            for msg in del_later:
                 await self.bot.delete_message(msg)
+        else:
+            error += codeblock
+            msg = await self.bot.say(error)
+            await asyncio.sleep(ann_del_delay)
+            await self.bot.delete_message(msg)
         
-        await self.bot.delete_message(ctx.message)
     
     async def playlist(self, linklist):
         for link in linklist:
