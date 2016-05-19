@@ -137,22 +137,27 @@ class Qaz:
 
     @commands.group(pass_context=True, no_pm=True)
     async def qaz(self, ctx):
+        """Displays a random qaz quote"""
         if ctx.invoked_subcommand is None:
             tags = list(self.qaz_list.keys())
             await self.bot.say(self.qaz_list[tags[random.randrange(0, len(tags))]])
 
     @qaz.command(pass_context = True, no_pm = True)
     async def add(self, ctx, *msg:str):
-        data = textparse.fix_input(str(msg), None)
-        print(msg)
-        tag = data[1]
-        link = data[0]
+        tag = msg[0]
+        link = msg[1]
         if (tag not in list(self.qaz_list.keys())):
-            self.qaz_file.write('\n' + link + ' ' + tag)
+            print(self.qaz_file.write('\n' + link + ' ' + tag))
+            self.qaz_file.flush()
             self.qaz_list[tag] = link
             await self.bot.say('Tag added successfully!')
         else:
             await self.bot.say('That tag already exists!')
+
+    @qaz.command(name = 'list', pass_context = True, no_pm = True)
+    async def _list(self, ctx):
+        print(list(self.qaz_list.keys()))
+
 
 bot = commands.Bot(command_prefix = commands.when_mentioned_or('~'), description = info )
 bot.add_cog(Music(bot))
