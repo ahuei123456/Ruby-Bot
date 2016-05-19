@@ -24,21 +24,25 @@ class Music:
 
     @commands.command(pass_context = True, no_pm = True)
     async def title(self, ctx, *, title:str):
-        """Searches the music database for a song with a particular title and queues it."""
+        """Searches the music database by title for a song.
+Queues it if a single matching song is found.
+If multiple songs match the search term, all the matching songs are displayed."""
         output = textparse.fix_input(title)
         data = textparse.title(output)
         await self.process(ctx, data)
 
     @commands.command(pass_context = True, no_pm = True)
     async def code(self, ctx, *, code:str):
-        """Searches the music database for a song with a particular code and queues it."""
+        """Searches the music database by code for a song.
+Queues it if a single matching song is found."""
         output = textparse.fix_input(code)
         data = textparse.code(output)
         await self.process(ctx, data)
 
     @commands.command(pass_context = True, no_pm = True)
     async def album(self, ctx, *, album:str):
-        """Searches the music database for an album with a particular title and queues it."""
+        """Searches the music database by title for an album.
+Queues all of it if a single matching album is found."""
         output = textparse.fix_input(album)
         data = textparse.album(output)
         await self.process(ctx, data, len(data))
