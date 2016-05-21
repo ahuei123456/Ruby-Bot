@@ -89,6 +89,7 @@ If multiple songs match the search term, an album is displayed."""
 
     async def print_table(self, ctx, msg, data, titles, limit = tbl_limit):
         del_later = list()
+        del_later.append(ctx.message)
         error = codeblock + msg
         error += '\n'
         if len(data) <= limit:
