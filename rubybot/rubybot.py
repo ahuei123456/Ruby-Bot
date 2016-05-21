@@ -83,8 +83,9 @@ If multiple songs match the search term, an album is displayed."""
         if len(data) <= max_length:
             await self.playlist(self.get_links(data))
             await asyncio.sleep(com_del_delay)
+            await self.bot.delete_message(ctx.message)
         else:
-            print_table(ctx, excess_results, self.strip_useless(data), ('Song Code', 'Song Title', 'Song Artist', 'Song Album'), tbl_limit)
+            await self.print_table(ctx, excess_results, self.strip_useless(data), ('Song Code', 'Song Title', 'Song Artist', 'Song Album'), tbl_limit)
 
     async def print_table(self, ctx, msg, data, titles, limit = tbl_limit):
         del_later = list()
