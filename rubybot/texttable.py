@@ -21,9 +21,7 @@ def print_table(table, max_char):
                 border = '+'
                 for x in range(0, len(maxlen)):
                     border += '--'
-                    for y in range(0, maxlen[x]):
-                        border += '-'
-
+                    border += maxlen[x] * '-'
                     border += '+'
                 border += '\n'
 
@@ -46,8 +44,7 @@ def print_table(table, max_char):
                     line += add
 
                     #add blanks
-                    for x in range(0, blanks):
-                        line += ' '
+                    line += blanks * ' '
 
                     #add ending for that term
                     line += ' |'
