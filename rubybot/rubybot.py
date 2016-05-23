@@ -201,4 +201,4 @@ bot.add_cog(Qaz(bot, 'files\qaz.txt'))
 async def on_ready():
     print('Logged in as:\n{0} (ID: {0.id})'.format(bot.user))
 
-bot.run('MTc4Nzc3NjczOTExMjM4NjU2.ChIILw.pwa7cw7eM3nDrScoXTxOuifFuY4')
+bot.run('insert token here)
