@@ -196,12 +196,13 @@ If a subcommand is not called, a random qaz quote is displayed."""
 bot = commands.Bot(command_prefix = commands.when_mentioned_or('~'), description = info )
 bot.add_cog(Music(bot))
 bot.add_cog(Qaz(bot, 'files\qaz.txt'))
+token_file = open(r'files\token.txt', 'r')
+token = token_file.read().strip()
+token_file.close()
 
 @bot.event
 async def on_ready():
     print('Logged in as:\n{0} (ID: {0.id})'.format(bot.user))
 
-token_file = open('files\token.txt')
-token = token_file.read.strip()
 
 bot.run(token)
