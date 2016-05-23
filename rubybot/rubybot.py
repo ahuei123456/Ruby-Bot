@@ -8,13 +8,16 @@ from discord.ext import commands
 
 info = 'Ruby Bot, your one-stop solution for music queueing! (Now updated with commands.ext)'
 excess_results = 'Your search returned too many results!'
+search_results = 'Here are the results of your search:'
 com_del_delay = 3
 post_del_delay = 1
 ann_del_delay = 30
 
-tbl_limit = 10
+tbl_limit = 12
 
 codeblock = '```'
+
+flag_find = '-f'
 
 class Music:
 
@@ -28,8 +31,12 @@ class Music:
 Queues it if a single matching song is found.
 If multiple songs match the search term, an error is displayed."""
         output = textparse.fix_input(title)
+        pm = self.contains_find(output)
         data = textparse.title(output)
-        await self.process(ctx, data)
+        if pm:
+            await self.print_table(ctx, search_results, self.strip_useless(data), ('Song Code', 'Song Title', 'Song Artist', 'Song Album'), 600, True)
+        else:
+            await self.process(ctx, data)
 
     @commands.command(pass_context = True, no_pm = True)
     async def code(self, ctx, *, code:str):
@@ -77,7 +84,12 @@ If multiple songs match the search term, an album is displayed."""
             info.append(row[:4])
 
         return info
-        
+
+    def contains_find(self, data):
+        if flag_find in data:
+            data.remove(flag_find)
+            return True
+        return False
     
     async def process(self, ctx, data, max_length = 1):
         if len(data) <= max_length:
@@ -87,11 +99,12 @@ If multiple songs match the search term, an album is displayed."""
         else:
             await self.print_table(ctx, excess_results, self.strip_useless(data), ('Song Code', 'Song Title', 'Song Artist', 'Song Album'), tbl_limit)
 
-    async def print_table(self, ctx, msg, data, titles, limit = tbl_limit):
+    async def print_table(self, ctx, msg, data, titles, limit = tbl_limit, pm = False):
         del_later = list()
         del_later.append(ctx.message)
         error = codeblock + msg
         error += '\n'
+        msg = None
         if len(data) <= limit:
                 
             table = [titles]
@@ -104,20 +117,21 @@ If multiple songs match the search term, an album is displayed."""
                 if x == 0:
                     error += output[x]
                     error += codeblock
-                    msg = await self.bot.say(error)
-                    del_later.append(msg)
-                        
                 else:
                     error = codeblock + output[x] + codeblock
+                if pm:await self.bot.whisper(error)
+                else:
                     msg = await self.bot.say(error)
-                    del_later.append(msg)
+                del_later.append(msg)
                         
             await asyncio.sleep(ann_del_delay)
             for msg in del_later:
                 await self.bot.delete_message(msg)
         else:
             error += codeblock
-            msg = await self.bot.say(error)
+            if pm:await self.bot.whisper(error)
+            else:
+                msg = await self.bot.say(error)
             await asyncio.sleep(ann_del_delay)
             await self.bot.delete_message(msg)
         

@@ -100,13 +100,13 @@ class MusicLinker(object):
         #print(data)
         return data
         
-    def title(self, title):
+    def title(self, title = ''):
         return self.advanced(title = title)
 
-    def code(self, code):
+    def code(self, code = ''):
         return self.advanced(code = code)
 
-    def album(self, album):
+    def album(self, album = ''):
         return self.advanced(album = album)
 
     def albums(self, album):

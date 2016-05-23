@@ -3,9 +3,11 @@ import random
 
 from dbconn import MusicLinker
 
-args = ['-id', '-t', '-a', '-al', '-ln', '-rm', '-tn', '-or', '-c', '-rr', '-rn']
+args = ['-id', '-t', '-a', '-al', '-ln', '-rm', '-tn', '-or', '-c', '-rr', '-rn', '-f']
 
 def title(data):
+    if len(data) < 1:
+        data.append('')
     return music.title(data[0])
 
 def code(data):
