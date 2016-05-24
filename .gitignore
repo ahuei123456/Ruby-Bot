@@ -88,3 +88,4 @@ ENV/
 # Rope project settings
 .ropeproject
 rubybot/files/token.txt
+rubybot/files/llsongs.txt
