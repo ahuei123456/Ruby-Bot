@@ -14,8 +14,8 @@ sql_end = 'COLLATE NOCASE'
 sql_and = 'AND '
 sql_or = 'OR '
 
-columns = ['code', 'title', 'artist', 'album', 'link', 'parent', 'num']
-music_table = 'music'
+columns = ['code', 'title', 'artist', 'subunit', 'album', 'anime', 'year', 'season', 'category', 'link', 'parent', 'num']
+music_table = 'songs'
 
 #playlist stuff
 playlist_table = 'playlist'
@@ -50,7 +50,7 @@ class MusicLinker(object):
         flag_or = 0
         flag_remix = 0
         
-        if args[7] in flags and flags[args[7]]:
+        if args[len(columns)] in flags and flags[args[len(columns)]]:
             flag_or = 1
 
         #Check if args are passed
@@ -60,13 +60,13 @@ class MusicLinker(object):
             #SELECT DISTINCT * FROM music WHERE 
             for arg in list(flags.keys()):
                 flag_match = 0
-                if arg in args[0:7]:
+                if arg in args[0:len(columns)]:
                     #add value to values
                     values.append('%' + flags[arg] + '%')
                 
                     sql += columns[args.index(arg)] + ' ' + sql_like + sql_param
                     #code, artist, album, link, parent
-                    if arg == args[0] or arg == args[2] or arg == args[3] or arg == args[4] or arg == args[5]:
+                    if arg != columns[columns.index('title')]:
                         flag_remix = 1
 
                     #add AND or OR
@@ -79,7 +79,7 @@ class MusicLinker(object):
             if not flag_remix:        
                 if (sql.endswith(sql_or)):
                     sql = sql[:len(sql) - 3] + sql_and
-                sql += columns[5]
+                sql += columns[columns.index('parent')]
                 sql += ' ' + sql_null
             else:
                 if (sql.endswith(sql_or)):
@@ -100,14 +100,17 @@ class MusicLinker(object):
         #print(data)
         return data
         
-    def title(self, title = ''):
-        return self.advanced(title = title)
+    def title(self, title=''):
+        return self.advanced(title=title)
 
-    def code(self, code = ''):
-        return self.advanced(code = code)
+    def code(self, code=''):
+        return self.advanced(code=code)
 
-    def album(self, album = ''):
-        return self.advanced(album = album)
+    def album(self, album=''):
+        return self.advanced(album=album)
+
+    def anime(self, anime=''):
+        return self.advanced(anime=anime)
 
     def albums(self, album):
         sql = 'SELECT DISTINCT album FROM music WHERE album LIKE ? ORDER BY album COLLATE NOCASE'

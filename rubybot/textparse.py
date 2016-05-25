@@ -3,21 +3,34 @@ import random
 
 from dbconn import MusicLinker
 
-args = ['-id', '-t', '-a', '-al', '-ln', '-rm', '-tn', '-or', '-c', '-rr', '-rn', '-f']
+args = ['-id', '-t', '-ar', '-su', '-al', '-an', '-yr', '-ss', '-st', '-ln', '-rm', '-tn', '-or', '-c', '-rr', '-rn']
+
+index_or = args.index('-or')
+index_count = args.index('-c')
+index_rr = args.index('-rr')
+index_rn = args.index('-rn')
 
 def title(data):
     if len(data) < 1:
         data.append('')
     return music.title(data[0])
 
+
 def code(data):
-    return music.code(data[0])
+    return music.code(data)
+
 
 def album(data):
     return music.album(data[0])
 
+
 def albums(data):
     return music.albums(data[0])
+
+
+def anime(data):
+    return music.anime(data)
+
 
 def adv(data):
     print(data)
@@ -31,13 +44,13 @@ def adv(data):
             fdata[dbconn.columns[2]] = data[0]
 
         elif data[x] in args:
-            if args.index(data[x]) >= 8:
-                if data[x] == args[8]:
+            if args.index(data[x]) >= index_or:
+                if data[x] == args[index_or]:
                     saved_flag = data[x]
-                elif data[x] == args[9]:
+                elif data[x] == args[index_rr]:
                     flag_random = 1
                     flag_repeat = 1
-                elif data[x] == args[10]:
+                elif data[x] == args[index_rn]:
                     flag_random = 1
 
             else:
@@ -46,7 +59,7 @@ def adv(data):
 
         else:
             if saved_flag != '':
-                if saved_flag != args[8]:
+                if saved_flag != args[index_or]:
                     fdata[dbconn.args[args.index(saved_flag)]] = data[x]
                 else:
                     count = int(data[x])
@@ -57,6 +70,7 @@ def adv(data):
     if flag_random:
         output = randomize(output, flag_repeat, count)
     return output
+
 
 def randomize(rlist, repeat = 0, count = 1):
     fpick = rlist[:]
@@ -75,6 +89,7 @@ def randomize(rlist, repeat = 0, count = 1):
                 break
 
     return play
+
 
 def fix_input(raw, special = args):
     if special is None:
