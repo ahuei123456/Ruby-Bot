@@ -134,4 +134,12 @@ def fix_input(raw, special = args):
     
     return output
 
+
+def suggest(creator: int, suggestion: str):
+    music.suggestion_add(creator, suggestion)
+
+
+def read():
+    return music.suggestion_read()
+
 music = MusicLinker('files\music.db')

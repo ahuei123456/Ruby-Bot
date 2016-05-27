@@ -13,7 +13,7 @@ def print_table(table, max_char):
                 for x in range(0, len(table[0])):
                     maxlen.append(0)
                     for y in range(0, len(table)):
-                        maxlen[x] = max(len(table[y][x]), maxlen[x])
+                        maxlen[x] = max(len(str(table[y][x])), maxlen[x])
 
                 print(maxlen)
 

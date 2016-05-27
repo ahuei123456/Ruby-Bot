@@ -29,6 +29,7 @@ class Pyuora:
     async def mimo(self, ctx):
         mimorin = self.api.get_user('mimori_suzuko')
         await self.bot.say("{0}'s current profile image is: {1}".format(mimorin.name, mimorin.profile_image_url.replace('_normal', '')))
+        await self.bot.say("{0}'s current banner image is: {1}".format(mimorin.name, mimorin.profile_background_image_url.replace('_normal', '')))
 
     @commands.command(name='tsun', no_pm=True)
     async def tsun(self, *, index: str = ''):

@@ -10,6 +10,7 @@ from discord.ext import commands
 
 class MusicQueue:
     search_results = 'Here are the results of your search:'
+    results_read = 'Here are the current unsolved suggestions:'
     error_excess_results = 'Your search returned too many results!'
     error_invalid_code = 'The code you specified is in an invalid format!'
     delay_del_command = 3
@@ -20,12 +21,15 @@ class MusicQueue:
 
     tbl_song_info = ('Song Code', 'Song Title', 'Song Artist', 'Song Album')
     tbl_album_list = ('Album Name',)
+    tbl_suggest_read = ('ID', 'Creator', 'Suggestion', 'Status')
 
     code_block = '```'
 
     def __init__(self, bot):
         self.bot = bot
         self.song_play = '!play'
+
+        self.id_admin = '144803988963983360'
 
     @commands.group(name='db', pass_context=True, no_pm=True)
     async def db(self, ctx):
@@ -102,6 +106,20 @@ class MusicQueue:
     @db.command(name='list', pass_context=True, no_pm=True)
     async def list(self, ctx, *, list: str):
         pass
+
+    @commands.command(name='suggest', pass_context=True, no_pm=True)
+    async def suggest(self, ctx, *, suggestion: str):
+        if ctx.invoked_subcommand is None:
+            textparse.suggest(ctx.message.author.id, suggestion)
+            await self.bot.say('Suggestion "{0}" has been added successfully!'.format(suggestion))
+
+    @commands.command(name='read', pass_context=True, hidden=True)
+    async def _read(self, ctx):
+        if ctx.message.author.id == self.id_admin:
+            data = textparse.read()
+            print(data)
+            await self.print_table(ctx, self.results_read, data, self.tbl_suggest_read, len(data), True)
+
 
     async def process(self, ctx, data, max_length=1):
         if len(data) <= max_length:

@@ -15,13 +15,17 @@ sql_and = 'AND '
 sql_or = 'OR '
 
 columns = ['code', 'title', 'artist', 'subunit', 'album', 'anime', 'year', 'season', 'category', 'link', 'parent', 'num']
-music_table = 'songs'
+table_music = 'songs'
 
 #playlist stuff
 playlist_table = 'playlist'
 p_columns = ['id', 'name', 'owner', 'song_id']
 
 args = columns[:] + ['or']
+
+table_suggest = 'suggestions'
+columns_suggest = ['id', 'creator', 'suggestion', 'status', 'change']
+status_suggest = ['New', 'Acknowledged', 'Rejected', 'Accepted', 'Finished']
 
 class MusicLinker(object):
     """
@@ -44,7 +48,7 @@ class MusicLinker(object):
     def advanced(self, **flags):
         global args
         sql = sql_stemp
-        sql += music_table +  ' '
+        sql += table_music + ' '
         
         values = list()
         flag_or = 0
@@ -117,3 +121,48 @@ class MusicLinker(object):
         results = self.cursor.execute(sql, ['%' + album + '%'])
         data = results.fetchall()
         return data
+
+    def suggestion_add(self, creator, suggestion):
+        print(creator + ' ' + suggestion)
+        sql = 'INSERT INTO {0} ({1}, {2}, {3}) VALUES(?,?,?)'.format(table_suggest, columns_suggest[1], columns_suggest[2], columns_suggest[3])
+        self.cursor.execute(sql, (creator, suggestion, status_suggest[0]))
+        self.db.commit()
+
+    def suggestion_read(self):
+        retrieve = 'SELECT {0},{1},{2}, {3} FROM {4} WHERE {5} IS ? OR {6} IS ?'.format(columns_suggest[0], columns_suggest[1], columns_suggest[2], columns_suggest[3], table_suggest, columns_suggest[3], columns_suggest[3])
+        data = self.cursor.execute(retrieve, (status_suggest[0], status_suggest[1]))
+        print(retrieve)
+        rows = data.fetchall()
+        update = 'UPDATE {0} SET {1} = ? WHERE {2} = ?'.format(table_suggest, columns_suggest[3], columns_suggest[3])
+        self.cursor.execute(update, (status_suggest[1], status_suggest[0]))
+        self.db.commit()
+
+
+        return rows
+
+    def suggestion_status(self, id: int):
+        retrieve = 'SELECT {0},{1} FROM {2} WHERE {3} IS ?'.format(columns_suggest[2], columns_suggest[3], table_suggest, columns_suggest[1])
+        data = self.cursor.execute(retrieve, (id,))
+
+        return data.fetchall()
+
+    def suggestion_reject(self, ids: list):
+        reject = 'UPDATE {0} SET {1} = ? WHERE {2} IN ?'.format(table_suggest, columns_suggest[3], columns_suggest[1])
+        self.cursor.execute(reject, status_suggest[2], ids)
+        self.db.commit()
+
+    def suggestion_accept(self, ids: list):
+        reject = 'UPDATE {0} SET {1} = ? WHERE {2} IN ?'.format(table_suggest, columns_suggest[3], columns_suggest[1])
+        self.cursor.execute(reject, status_suggest[3], ids)
+        self.db.commit()
+
+    def suggestion_finish(self, id: int, codes: list):
+        finish = 'UPDATE {0} SET {1} = ? WHERE {2} = ?'.format(table_suggest, columns_suggest[3], columns_suggest[0])
+        self.cursor.execute(finish, (status_suggest[4], id))
+        self.db.commit()
+
+        added = ''
+        for code in codes:
+            added += code + ' '
+        added = added.strip()
+
