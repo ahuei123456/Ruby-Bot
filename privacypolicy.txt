@@ -1,0 +1,3 @@
+Ruby Bot's privacy policy
+
+No personal information is stored. This bot is for mostly hobby use and does not save nor send any personal information to its creator.
