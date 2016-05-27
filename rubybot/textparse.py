@@ -10,6 +10,7 @@ index_count = args.index('-c')
 index_rr = args.index('-rr')
 index_rn = args.index('-rn')
 
+
 def title(data):
     if len(data) < 1:
         data.append('')
@@ -28,8 +29,8 @@ def albums(data):
     return music.albums(data[0])
 
 
-def anime(data):
-    return music.anime(data)
+def anime(data, type=''):
+    return music.anime(data[0], type)
 
 
 def adv(data):
@@ -46,11 +47,14 @@ def adv(data):
         elif data[x] in args:
             if args.index(data[x]) >= index_or:
                 if data[x] == args[index_or]:
+                    print('-or')
                     saved_flag = data[x]
                 elif data[x] == args[index_rr]:
+                    print('-rr')
                     flag_random = 1
                     flag_repeat = 1
                 elif data[x] == args[index_rn]:
+                    print('-c')
                     flag_random = 1
 
             else:
@@ -59,7 +63,7 @@ def adv(data):
 
         else:
             if saved_flag != '':
-                if saved_flag != args[index_or]:
+                if args.index(saved_flag) <= index_or:
                     fdata[dbconn.args[args.index(saved_flag)]] = data[x]
                 else:
                     count = int(data[x])
@@ -83,7 +87,7 @@ def randomize(rlist, repeat = 0, count = 1):
         if repeat:
             play.append(fpick[random.randrange(len(fpick))])
         else:
-            if len(fpick > 0):
+            if len(fpick) > 0:
                 play.append(fpick.pop(random.randrange(len(fpick))))
             else:
                 break

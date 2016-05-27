@@ -33,12 +33,19 @@ class MusicQueue:
 
     @db.command(name='title', pass_context=True, no_pm=True)
     async def title(self, ctx, *, title: str):
+        """Searches the music database by title for a song.
+        Queues it if a single matching song is found.
+        If multiple songs match the search term, an error is displayed."""
+
         output = textparse.fix_input(title)
         data = textparse.title(output)
         await self.process(ctx, data)
 
     @db.command(name='album', pass_context=True, no_pm=True)
     async def album(self, ctx, *, album: str):
+        """Searches the music database by title for an album.
+        Queues all of it if a single matching album is found.
+        If multiple albums match the search term, a list of matching albums is displayed."""
         output = textparse.fix_input(album)
         albums = textparse.albums(output)
         if len(albums) > 1:
@@ -47,14 +54,41 @@ class MusicQueue:
             data = textparse.album(output)
             await self.process(ctx, data, len(data))
 
-    @db.command(name='anime', pass_context=True, no_pm=True)
+    @db.group(name='anime', pass_context=True, no_pm=True)
     async def anime(self, ctx, *, anime: str):
+        category = ''
+        if anime.startswith('opening'):
+            anime = anime.replace('opening', '', 1).strip()
+            category = 'opening'
+        elif anime.startswith('ending'):
+            anime = anime.replace('ending', '', 1).strip()
+            category = 'ending'
         output = textparse.fix_input(anime)
-        data = textparse.anime(output)
+        data = textparse.anime(output, category)
         await self.process(ctx, data, len(data))
+
+    @anime.command(name='opening', pass_context=True, no_pm=True)
+    async def op(self, ctx, *, anime: str):
+        """
+        Searches the music database for opening songs of an anime.
+        Queues all the openings if an anime is found.
+        :param anime: Title of anime
+        """
+
+
+    @anime.command(name='ending', pass_context=True, no_pm=True)
+    async def ed(self, ctx, *, anime: str):
+        """
+        Searches the music database for ending songs of an anime.
+        Queues all the endings if an anime is found.
+        :param anime: Title of anime
+        """
 
     @db.command(name='code', pass_context=True, no_pm=True)
     async def _code(self, ctx, *, code: str):
+        """Searches the music database by code for a song.
+            Queues it if a single matching song is found.
+            If multiple songs match the search term, an error is displayed."""
         output = textparse.fix_input(code)
         data = textparse.code(output)
         await self.process(ctx, data)

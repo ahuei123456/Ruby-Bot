@@ -109,8 +109,8 @@ class MusicLinker(object):
     def album(self, album=''):
         return self.advanced(album=album)
 
-    def anime(self, anime=''):
-        return self.advanced(anime=anime)
+    def anime(self, anime='', type=''):
+        return self.advanced(anime=anime, category=type)
 
     def albums(self, album):
         sql = 'SELECT DISTINCT album FROM music WHERE album LIKE ? ORDER BY album COLLATE NOCASE'
