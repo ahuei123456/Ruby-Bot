@@ -156,13 +156,8 @@ class MusicLinker(object):
         self.cursor.execute(reject, status_suggest[3], ids)
         self.db.commit()
 
-    def suggestion_finish(self, id: int, codes: list):
+    def suggestion_finish(self, id: int, msg):
         finish = 'UPDATE {0} SET {1} = ? WHERE {2} = ?'.format(table_suggest, columns_suggest[3], columns_suggest[0])
         self.cursor.execute(finish, (status_suggest[4], id))
         self.db.commit()
-
-        added = ''
-        for code in codes:
-            added += code + ' '
-        added = added.strip()
 

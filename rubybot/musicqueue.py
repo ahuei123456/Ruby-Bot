@@ -11,7 +11,10 @@ from discord.ext import commands
 class MusicQueue:
     search_results = 'Here are the results of your search:'
     results_read = 'Here are the current unsolved suggestions:'
-    error_excess_results = 'Your search returned too many results!'
+    error_excess_results = 'Your search for "{0}" returned too many results!'
+    error_excess_results_generic = 'Your search returned too many results!'
+    error_no_results = 'Your search for "{0}" returned no results!'
+    error_suggestion_too_long = 'Your suggestion is too long! Please limit it to 160 characters.'
     error_invalid_code = 'The code you specified is in an invalid format!'
     delay_del_command = 3
     delay_del_play = 1
@@ -25,6 +28,8 @@ class MusicQueue:
 
     code_block = '```'
 
+    char_limit_suggest = 160
+
     def __init__(self, bot):
         self.bot = bot
         self.song_play = '!play'
@@ -33,6 +38,9 @@ class MusicQueue:
 
     @commands.group(name='db', pass_context=True, no_pm=True)
     async def db(self, ctx):
+        """
+        Lets you queue songs from within Ruby Bot's database.
+        """
         pass
 
     @db.command(name='title', pass_context=True, no_pm=True)
@@ -43,7 +51,10 @@ class MusicQueue:
 
         output = textparse.fix_input(title)
         data = textparse.title(output)
-        await self.process(ctx, data)
+        if len(data) == 0:
+            await self.error_results_not_found(title)
+        else:
+            await self.process(ctx, data)
 
     @db.command(name='album', pass_context=True, no_pm=True)
     async def album(self, ctx, *, album: str):
@@ -53,7 +64,9 @@ class MusicQueue:
         output = textparse.fix_input(album)
         albums = textparse.albums(output)
         if len(albums) > 1:
-            await self.print_table(ctx, self.error_excess_results, albums, self.tbl_album_list)
+            await self.print_table(ctx, self.error_excess_results.format(output), albums, self.tbl_album_list)
+        elif len(albums) == 0:
+            await self.error_results_not_found(album)
         else:
             data = textparse.album(output)
             await self.process(ctx, data, len(data))
@@ -90,12 +103,18 @@ class MusicQueue:
 
     @db.command(name='code', pass_context=True, no_pm=True)
     async def _code(self, ctx, *, code: str):
-        """Searches the music database by code for a song.
-            Queues it if a single matching song is found.
-            If multiple songs match the search term, an error is displayed."""
+        """
+        Searches the music database by code for a song.
+        Queues it if a single matching song is found.
+        If no songs match the search term, an error is displayed.
+        :param code: Song code to search for
+        """
         output = textparse.fix_input(code)
         data = textparse.code(output)
-        await self.process(ctx, data)
+        if len(data) == 0:
+            await self.error_results_not_found(code)
+        else:
+            await self.process(ctx, data)
 
     @db.command(name='search', pass_context=True, no_pm=True)
     async def search(self, ctx, *, search: str):
@@ -109,9 +128,17 @@ class MusicQueue:
 
     @commands.command(name='suggest', pass_context=True, no_pm=True)
     async def suggest(self, ctx, *, suggestion: str):
+        """
+        Suggest something for the bot!
+        :param suggestion: Your suggestion.
+        """
         if ctx.invoked_subcommand is None:
-            textparse.suggest(ctx.message.author.id, suggestion)
-            await self.bot.say('Suggestion "{0}" has been added successfully!'.format(suggestion))
+            suggestion = suggestion.strip()
+            if len(suggestion) <= 160:
+                textparse.suggest(ctx.message.author.id)
+                await self.bot.say('Suggestion "{0}" has been added successfully!'.format(suggestion))
+            else:
+                await self.error_long_suggestion()
 
     @commands.command(name='read', pass_context=True, hidden=True)
     async def _read(self, ctx):
@@ -129,6 +156,12 @@ class MusicQueue:
         else:
             await self.print_table(ctx, self.error_excess_results, self.get_song_info(data),
                                    self.tbl_song_info, self.tbl_limit)
+
+    async def error_long_suggestion(self):
+        await self.bot.say(self.error_suggestion_too_long)
+
+    async def error_results_not_found(self, search_term: str):
+        await self.bot.say(self.error_no_results.format(search_term))
 
     async def print_table(self, ctx, msg, data, titles, limit=tbl_limit, pm=False):
         del_later = list()

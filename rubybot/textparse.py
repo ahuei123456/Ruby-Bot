@@ -131,7 +131,8 @@ def fix_input(raw, special = args):
     if len(build) > 0:
         output.append(build.strip().rstrip())
 
-    
+    if len(output) > 150:
+        output = output[:151]
     return output
 
 

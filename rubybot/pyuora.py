@@ -5,31 +5,29 @@ import bs4
 import random
 import codecs
 from discord.ext import commands
+from instagram import InstagramAPI
 
 
 class Pyuora:
 
+    api_twitter = None
+    api_insta = None
+
     def __init__(self, bot):
         self.bot = bot
-        data = open(r'files\twitter.txt')
-        comp = list()
-        for line in data:
-            comp.append(line.strip())
 
-        self.c_key = comp[0]
-        self.c_secret = comp[1]
-        self.a_token = comp[2]
-        self.a_secret = comp[3]
-        self.auth = tweepy.OAuthHandler(self.c_key, self.c_secret)
-        self.auth.set_access_token(self.a_token, self.a_secret)
+        self.init_twitter(r'files\twitter.txt')
+        self.init_insta(r'files\insta.txt')
 
-        self.api = tweepy.API(self.auth)
 
     @commands.command(name='mimo', pass_context=True, no_pm=True)
     async def mimo(self, ctx):
-        mimorin = self.api.get_user('mimori_suzuko')
+        """
+        Displays @mimori_suzuko's current profile image and banner.
+        """
+        mimorin = self.api_twitter.get_user('mimori_suzuko')
         await self.bot.say("{0}'s current profile image is: {1}".format(mimorin.name, mimorin.profile_image_url.replace('_normal', '')))
-        await self.bot.say("{0}'s current banner image is: {1}".format(mimorin.name, mimorin.profile_background_image_url.replace('_normal', '')))
+        await self.bot.say("{0}'s current banner image is: {1}".format(mimorin.name, mimorin.profile_banner_url.replace('_normal', '')))
 
     @commands.command(name='tsun', no_pm=True)
     async def tsun(self, *, index: str = ''):
@@ -39,6 +37,7 @@ class Pyuora:
         :param index: If an index is specified, the specific post on the front page is retrieved. If not, a random post is grabbed.
         """
         msgs = self.get_tsun(index)
+        print(dir(feed))
         for msg in msgs:
             await self.bot.say(msg)
 
@@ -77,4 +76,30 @@ class Pyuora:
 
         data = [img, caption]
         return data
+
+    def init_twitter(self, filename: str):
+        data = open(filename)
+        comp = list()
+        for line in data:
+            comp.append(line.strip())
+
+        c_key = comp[0]
+        c_secret = comp[1]
+        a_token = comp[2]
+        a_secret = comp[3]
+        auth = tweepy.OAuthHandler(c_key, c_secret)
+        auth.set_access_token(a_token, a_secret)
+
+        self.api_twitter = tweepy.API(auth)
+
+    def init_insta(self, filename: str):
+        data = open(filename)
+        comp = list()
+        for line in data:
+            comp.append(line.strip())
+
+        access_token = comp[2]
+        client_secret = comp[1]
+        self.api_insta = InstagramAPI(access_token=access_token, client_secret=client_secret)
+
 
