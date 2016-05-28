@@ -143,4 +143,20 @@ def suggest(creator: int, suggestion: str):
 def read():
     return music.suggestion_read()
 
+
+def reject(id: int, reason: str):
+    return music.suggestion_reject(id, reason)
+
+
+def accept(id: int, reason: str):
+    return music.suggestion_accept(id, reason)
+
+
+def accepted():
+    return music.suggestion_accepted()
+
+
+def finish(id: int, reason: str):
+    return music.suggestion_finish(id, reason)
+
 music = MusicLinker('files\music.db')

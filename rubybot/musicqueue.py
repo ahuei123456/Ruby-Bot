@@ -10,12 +10,17 @@ from discord.ext import commands
 
 class MusicQueue:
     search_results = 'Here are the results of your search:'
-    results_read = 'Here are the current unsolved suggestions:'
+    results_read = 'Here are the currently unanswered suggestions:'
+    results_accepted = 'Here are the currently unfinished unanswered suggestions:'
+    results_reject = 'Your request: "{0}" has been rejected for the following reason: {1}'
+    results_accept = 'Your request: "{0}" has been accepted with the following comment: {1}'
+    results_finish = 'Congratulations! Your request: "{0}" has been completed with the following remarks: {1}'
     error_excess_results = 'Your search for "{0}" returned too many results!'
     error_excess_results_generic = 'Your search returned too many results!'
     error_no_results = 'Your search for "{0}" returned no results!'
     error_suggestion_too_long = 'Your suggestion is too long! Please limit it to 160 characters.'
     error_invalid_code = 'The code you specified is in an invalid format!'
+    error_invalid_id = 'The id you specified is in an invalid format!'
     delay_del_command = 3
     delay_del_play = 1
     delay_del_announcement = 30
@@ -24,7 +29,7 @@ class MusicQueue:
 
     tbl_song_info = ('Song Code', 'Song Title', 'Song Artist', 'Song Album')
     tbl_album_list = ('Album Name',)
-    tbl_suggest_read = ('ID', 'Creator', 'Suggestion', 'Status')
+    tbl_suggest = ('ID', 'Creator', 'Suggestion', 'Status')
 
     code_block = '```'
 
@@ -135,7 +140,7 @@ class MusicQueue:
         if ctx.invoked_subcommand is None:
             suggestion = suggestion.strip()
             if len(suggestion) <= 160:
-                textparse.suggest(ctx.message.author.id)
+                textparse.suggest(ctx.message.author.id, suggestion)
                 await self.bot.say('Suggestion "{0}" has been added successfully!'.format(suggestion))
             else:
                 await self.error_long_suggestion()
@@ -145,8 +150,56 @@ class MusicQueue:
         if ctx.message.author.id == self.id_admin:
             data = textparse.read()
             print(data)
-            await self.print_table(ctx, self.results_read, data, self.tbl_suggest_read, len(data), True)
+            await self.print_table(ctx, self.results_read, data, self.tbl_suggest, len(data), True)
 
+    @commands.command(name='reject', pass_context=True, hidden=True)
+    async def _reject(self, ctx, *, reason: str):
+        if ctx.message.author.id == self.id_admin:
+            data = reason.split()
+            try:
+                num = int(data[0])
+                reason = ' '.join(data[1:])
+                hunt = textparse.reject(num, reason)
+                member = ctx.message.server.get_member(str(hunt[0]))
+                if member is not None:
+                    await self.bot.send_message(member, self.results_reject.format(hunt[1], hunt[2]))
+            except TypeError:
+                await self.bot.whisper(self.error_invalid_id)
+
+    @commands.command(name='accept', pass_context=True, hidden=True)
+    async def _accept(self, ctx, *, reason: str):
+        if ctx.message.author.id == self.id_admin:
+            data = reason.split()
+            try:
+                num = int(data[0])
+                reason = ' '.join(data[1:])
+                hunt = textparse.accept(num, reason)
+                member = ctx.message.server.get_member(str(hunt[0]))
+                if member is not None:
+                    await self.bot.send_message(member, self.results_accept.format(hunt[1], hunt[2]))
+            except TypeError:
+                await self.bot.whisper(self.error_invalid_id)
+
+    @commands.command(name='accepted', pass_context=True, hidden=True)
+    async def _accepted(self, ctx):
+        if ctx.message.author.id == self.id_admin:
+            data = textparse.accepted()
+            print(data)
+            await self.print_table(ctx, self.results_accepted, data, self.tbl_suggest, len(data), True)
+
+    @commands.command(name='finish', pass_context=True, hidden=True)
+    async def _finish(self, ctx, *, reason: str):
+        if ctx.message.author.id == self.id_admin:
+            data = reason.split()
+            try:
+                num = int(data[0])
+                reason = ' '.join(data[1:])
+                hunt = textparse.finish(num, reason)
+                member = ctx.message.server.get_member(str(hunt[0]))
+                if member is not None:
+                    await self.bot.send_message(member, self.results_finish.format(hunt[1], hunt[2]))
+            except TypeError:
+                await self.bot.whisper(self.error_invalid_id)
 
     async def process(self, ctx, data, max_length=1):
         if len(data) <= max_length:

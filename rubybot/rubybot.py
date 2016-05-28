@@ -8,7 +8,7 @@ import pyuora
 
 from discord.ext import commands
 
-info = 'Ruby Bot, your one-stop solution for music queueing! (Now updated with commands.ext)\nAs Ruby Bot is currently undergoing upgrades, please be aware that only Love Live! songs are available for queueing.\nThank you for using Ruby Bot!'
+info = 'Ruby Bot, your one-stop solution for music queueing! (Now updated with commands.ext)\nNow updated with LL! Seiyuu albums (+Maaya Uchida).\nThank you for using Ruby Bot!'
 excess_results = 'Your search returned too many results!'
 search_results = 'Here are the results of your search:'
 com_del_delay = 3
@@ -92,7 +92,7 @@ If a subcommand is not called, a random qaz quote is displayed."""
         print(list(self.qaz_list.keys()))
 
 
-bot = commands.Bot(command_prefix = commands.when_mentioned_or('+'), description = info )
+bot = commands.Bot(command_prefix = commands.when_mentioned_or('~'), description = info )
 bot.add_cog(Music(bot))
 bot.add_cog(Qaz(bot, 'files\qaz.txt'))
 bot.add_cog(musicqueue.MusicQueue(bot))

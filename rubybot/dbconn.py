@@ -27,6 +27,7 @@ table_suggest = 'suggestions'
 columns_suggest = ['id', 'creator', 'suggestion', 'status', 'change']
 status_suggest = ['New', 'Acknowledged', 'Rejected', 'Accepted', 'Finished']
 
+
 class MusicLinker(object):
     """
     A class to interact with the database of songs.
@@ -129,7 +130,7 @@ class MusicLinker(object):
         self.db.commit()
 
     def suggestion_read(self):
-        retrieve = 'SELECT {0},{1},{2}, {3} FROM {4} WHERE {5} IS ? OR {6} IS ?'.format(columns_suggest[0], columns_suggest[1], columns_suggest[2], columns_suggest[3], table_suggest, columns_suggest[3], columns_suggest[3])
+        retrieve = 'SELECT {0},{1},{2},{3} FROM {4} WHERE {5} IS ? OR {6} IS ?'.format(columns_suggest[0], columns_suggest[1], columns_suggest[2], columns_suggest[3], table_suggest, columns_suggest[3], columns_suggest[3])
         data = self.cursor.execute(retrieve, (status_suggest[0], status_suggest[1]))
         print(retrieve)
         rows = data.fetchall()
@@ -146,18 +147,49 @@ class MusicLinker(object):
 
         return data.fetchall()
 
-    def suggestion_reject(self, ids: list):
-        reject = 'UPDATE {0} SET {1} = ? WHERE {2} IN ?'.format(table_suggest, columns_suggest[3], columns_suggest[1])
-        self.cursor.execute(reject, status_suggest[2], ids)
+    def suggestion_reject(self, id: int, reason: str):
+        reject = 'UPDATE {0} SET {1} = ?, {2} = ? WHERE {3} IS ?'.format(table_suggest, columns_suggest[3], columns_suggest[4], columns_suggest[0])
+        self.cursor.execute(reject, (status_suggest[2], reason, id))
         self.db.commit()
 
-    def suggestion_accept(self, ids: list):
-        reject = 'UPDATE {0} SET {1} = ? WHERE {2} IN ?'.format(table_suggest, columns_suggest[3], columns_suggest[1])
-        self.cursor.execute(reject, status_suggest[3], ids)
+        get_id = 'SELECT {0},{1},{2} FROM {3} WHERE {4} IS ?'.format(columns_suggest[1], columns_suggest[2], columns_suggest[4], table_suggest, columns_suggest[0])
+        data = self.cursor.execute(get_id, (id,))
+        return data.fetchone()
+
+    def suggestion_accept(self, id: int, reason: str):
+        accept = 'UPDATE {0} SET {1} = ?, {2} = ? WHERE {3} IS ?'.format(table_suggest, columns_suggest[3],
+                                                                         columns_suggest[4], columns_suggest[0])
+        self.cursor.execute(accept, (status_suggest[3], reason, id))
         self.db.commit()
 
-    def suggestion_finish(self, id: int, msg):
-        finish = 'UPDATE {0} SET {1} = ? WHERE {2} = ?'.format(table_suggest, columns_suggest[3], columns_suggest[0])
-        self.cursor.execute(finish, (status_suggest[4], id))
+        get_id = 'SELECT {0},{1},{2} FROM {3} WHERE {4} IS ?'.format(columns_suggest[1], columns_suggest[2],
+                                                                     columns_suggest[4], table_suggest,
+                                                                     columns_suggest[0])
+        data = self.cursor.execute(get_id, (id,))
+        return data.fetchone()
+
+    def suggestion_accepted(self):
+        retrieve = 'SELECT {0},{1},{2},{3} FROM {4} WHERE {5} IS ?'.format(columns_suggest[0],
+                                                                                       columns_suggest[1],
+                                                                                       columns_suggest[2],
+                                                                                       columns_suggest[3],
+                                                                                       table_suggest,
+                                                                                       columns_suggest[3])
+        data = self.cursor.execute(retrieve, (status_suggest[3],))
+        print(retrieve)
+        rows = data.fetchall()
+
+        return rows
+
+    def suggestion_finish(self, id: int, reason: str):
+        accept = 'UPDATE {0} SET {1} = ?, {2} = ? WHERE {3} IS ?'.format(table_suggest, columns_suggest[3],
+                                                                         columns_suggest[4], columns_suggest[0])
+        self.cursor.execute(accept, (status_suggest[4], reason, id))
         self.db.commit()
+
+        get_id = 'SELECT {0},{1},{2} FROM {3} WHERE {4} IS ?'.format(columns_suggest[1], columns_suggest[2],
+                                                                     columns_suggest[4], table_suggest,
+                                                                     columns_suggest[0])
+        data = self.cursor.execute(get_id, (id,))
+        return data.fetchone()
 

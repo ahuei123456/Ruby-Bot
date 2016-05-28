@@ -37,7 +37,6 @@ class Pyuora:
         :param index: If an index is specified, the specific post on the front page is retrieved. If not, a random post is grabbed.
         """
         msgs = self.get_tsun(index)
-        print(dir(feed))
         for msg in msgs:
             await self.bot.say(msg)
 

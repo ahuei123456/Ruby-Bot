@@ -27,6 +27,7 @@ def print_table(table, max_char):
 
                 #check if the table goes over char limit
                 if len(border) > max_char:
+                    print(len(border))
                     raise ValueError('Table is too big!')
 
                 #add border to char limit
