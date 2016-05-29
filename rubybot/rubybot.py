@@ -8,7 +8,7 @@ import pyuora
 
 from discord.ext import commands
 
-info = 'Ruby Bot, your one-stop solution for music queueing! (Now updated with commands.ext)\nNow updated with LL! Seiyuu albums (+Maaya Uchida).\nThank you for using Ruby Bot!'
+info = "Ruby Bot, your one-stop solution for music queueing! (Now updated with commands.ext)\nNow updated with database download! Use db download to download Ruby Bot's current music database.\nThank you for using Ruby Bot!"
 excess_results = 'Your search returned too many results!'
 search_results = 'Here are the results of your search:'
 com_del_delay = 3
@@ -16,33 +16,6 @@ post_del_delay = 1
 ann_del_delay = 30
 
 tbl_limit = 12
-codeblock = '```'
-
-class Music:
-
-    def __init__(self, bot):
-        self.bot = bot
-        self.song_play = '!play'
-
-    @commands.command(pass_context = True, no_pm = True)
-    async def title(self, ctx, *, title:str):
-        """Deprecated. Use db title <title> instead"""
-        await self.bot.say(codeblock + "Deprecated. Use db title <title> instead." + codeblock)
-
-    @commands.command(pass_context = True, no_pm = True)
-    async def code(self, ctx, *, code:str):
-        """Deprecated. Use db code <code> instead"""
-        await self.bot.say(codeblock + "Deprecated. Use db code <code> instead." + codeblock)
-
-    @commands.command(pass_context = True, no_pm = True)
-    async def album(self, ctx, *, album:str):
-        """Deprecated. Use db album <album> instead"""
-        await self.bot.say(codeblock + "Deprecated. Use db album <album> instead." + codeblock)
-
-    @commands.command(pass_context = True, no_pm = True)
-    async def adv(self, ctx, *, adv:str):
-        """Deprecated. Use db search <search args> instead"""
-        await self.bot.say(codeblock + "Deprecated. Use db search <search args> instead." + codeblock)
 
 class Qaz:
     def __init__(self, bot, filename):
@@ -92,8 +65,7 @@ If a subcommand is not called, a random qaz quote is displayed."""
         print(list(self.qaz_list.keys()))
 
 
-bot = commands.Bot(command_prefix = commands.when_mentioned_or('~'), description = info )
-bot.add_cog(Music(bot))
+bot = commands.Bot(command_prefix=commands.when_mentioned_or('~'), description=info)
 bot.add_cog(Qaz(bot, 'files\qaz.txt'))
 bot.add_cog(musicqueue.MusicQueue(bot))
 bot.add_cog(pyuora.Pyuora(bot))

@@ -40,6 +40,8 @@ class Pyuora:
         for msg in msgs:
             await self.bot.say(msg)
 
+
+
     def get_tsun(self, index: str):
         r = requests.get('https://www.instagram.com/tsuntsunlive/')
         html = r.content

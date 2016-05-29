@@ -41,6 +41,26 @@ class MusicQueue:
 
         self.id_admin = '144803988963983360'
 
+    @commands.command(pass_context=True, no_pm=True, hidden=True)
+    async def title(self, ctx, *, title: str):
+        """Deprecated. Use db title <title> instead"""
+        await self.bot.say(self.code("Deprecated. Use db title <title> instead."))
+
+    @commands.command(pass_context=True, no_pm=True, hidden=True)
+    async def code(self, ctx, *, code: str):
+        """Deprecated. Use db code <code> instead"""
+        await self.bot.say(self.code("Deprecated. Use db code <code> instead."))
+
+    @commands.command(pass_context=True, no_pm=True, hidden=True)
+    async def album(self, ctx, *, album: str):
+        """Deprecated. Use db album <album> instead"""
+        await self.bot.say(self.code("Deprecated. Use db album <album> instead."))
+
+    @commands.command(pass_context=True, no_pm=True, hidden=True)
+    async def adv(self, ctx, *, adv: str):
+        """Deprecated. Use db search <search args> instead"""
+        await self.bot.say(self.code("Deprecated. Use db search <search args> instead."))
+
     @commands.group(name='db', pass_context=True, no_pm=True)
     async def db(self, ctx):
         """
@@ -130,6 +150,15 @@ class MusicQueue:
     @db.command(name='list', pass_context=True, no_pm=True)
     async def list(self, ctx, *, list: str):
         pass
+
+    @db.command(name='download')
+    async def download(self):
+        """
+        Retrieves the current music database.
+        :return:
+        """
+        print('uploading')
+        await self.bot.upload(fp='files\music.db', content='Current database:')
 
     @commands.command(name='suggest', pass_context=True, no_pm=True)
     async def suggest(self, ctx, *, suggestion: str):
