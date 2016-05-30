@@ -19,7 +19,6 @@ class Pyuora:
         self.init_twitter(r'files\twitter.txt')
         self.init_insta(r'files\insta.txt')
 
-
     @commands.command(name='mimo', pass_context=True, no_pm=True)
     async def mimo(self, ctx):
         """
@@ -39,8 +38,6 @@ class Pyuora:
         msgs = self.get_tsun(index)
         for msg in msgs:
             await self.bot.say(msg)
-
-
 
     def get_tsun(self, index: str):
         r = requests.get('https://www.instagram.com/tsuntsunlive/')

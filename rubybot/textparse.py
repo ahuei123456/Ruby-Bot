@@ -33,7 +33,7 @@ def anime(data, type=''):
     return music.anime(data[0], type)
 
 
-def adv(data, args):
+def adv(data, args=args_full):
     print(data)
     fdata = dict()
     saved_flag = ''

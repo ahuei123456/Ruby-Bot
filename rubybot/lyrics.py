@@ -1,6 +1,6 @@
 import requests
 import bs4
-import codecs
+import re
 
 from discord.ext import commands
 
@@ -17,6 +17,7 @@ class Lyrics:
     lang = ('romaji', 'kanji', 'english')
 
     links = dict()
+    alts = dict()
     code_block = '```'
 
     max_char = 2000
@@ -145,3 +146,6 @@ class Lyrics:
 
     def code(self, msg):
         return self.code_block + msg + self.code_block
+
+    def sub_title(self, title):
+        re.compile(title)
