@@ -5,10 +5,11 @@ import random
 import texttable
 import musicqueue
 import pyuora
+import lyrics
 
 from discord.ext import commands
 
-info = "Ruby Bot, your one-stop solution for music queueing! (Now updated with commands.ext)\nNow updated with database download! Use db download to download Ruby Bot's current music database.\nThank you for using Ruby Bot!"
+info = "Ruby Bot, your one-stop solution for music queueing! (Now updated with commands.ext)\nNow updated with lyrical display! Use lyrics <title> to display the lyrics of any muse song.\nThank you for using Ruby Bot!"
 excess_results = 'Your search returned too many results!'
 search_results = 'Here are the results of your search:'
 com_del_delay = 3
@@ -69,6 +70,7 @@ bot = commands.Bot(command_prefix=commands.when_mentioned_or('~'), description=i
 bot.add_cog(Qaz(bot, 'files\qaz.txt'))
 bot.add_cog(musicqueue.MusicQueue(bot))
 bot.add_cog(pyuora.Pyuora(bot))
+bot.add_cog(lyrics.Lyrics(bot))
 token_file = open(r'files\token.txt', 'r')
 token = token_file.read().strip()
 token_file.close()

@@ -72,7 +72,9 @@ class MusicQueue:
     async def title(self, ctx, *, title: str):
         """Searches the music database by title for a song.
         Queues it if a single matching song is found.
-        If multiple songs match the search term, an error is displayed."""
+        If multiple songs match the search term, a list of matching titles is displayed.
+        :param title: Song title to search for
+        """
 
         output = textparse.fix_input(title)
         data = textparse.title(output)
@@ -85,7 +87,9 @@ class MusicQueue:
     async def album(self, ctx, *, album: str):
         """Searches the music database by title for an album.
         Queues all of it if a single matching album is found.
-        If multiple albums match the search term, a list of matching albums is displayed."""
+        If multiple albums match the search term, a list of matching albums is displayed.
+        :param album: Song album to search for
+        """
         output = textparse.fix_input(album)
         albums = textparse.albums(output)
         if len(albums) > 1:
@@ -98,6 +102,11 @@ class MusicQueue:
 
     @db.group(name='anime', pass_context=True, no_pm=True)
     async def anime(self, ctx, *, anime: str):
+        """
+        Searches the music database for songs of an anime.
+        Queues all the songs if an anime is found.
+        :param anime: Title of anime
+        """
         category = ''
         if anime.startswith('opening'):
             anime = anime.replace('opening', '', 1).strip()
@@ -148,8 +157,15 @@ class MusicQueue:
         await self.process(ctx, data, len(data))
 
     @db.command(name='list', pass_context=True, no_pm=True)
-    async def list(self, ctx, *, list: str):
-        pass
+    async def list(self, ctx, *, search: str=''):
+        """
+        Searches the music database using formatted arguments and PMs the info of all the songs found.
+        :param search: A string containing arguments and parameters to search the database with. If no arguments are passed, all the songs in the database are PM'd.
+        :return:
+        """
+        output = textparse.fix_input(search)
+        data = textparse.adv(output)
+        await self.pm_list(ctx, data)
 
     @db.command(name='download')
     async def download(self):
@@ -160,6 +176,7 @@ class MusicQueue:
         print('uploading')
         await self.bot.upload(fp='files\music.db', content='Current database:')
 
+    # Suggestion commands from here onward
     @commands.command(name='suggest', pass_context=True, no_pm=True)
     async def suggest(self, ctx, *, suggestion: str):
         """
@@ -229,6 +246,10 @@ class MusicQueue:
                     await self.bot.send_message(member, self.results_finish.format(hunt[1], hunt[2]))
             except TypeError:
                 await self.bot.whisper(self.error_invalid_id)
+
+    async def pm_list(self, ctx, data):
+        await self.print_table(ctx, self.search_results, self.get_song_info(data),
+                               self.tbl_song_info, len(data), True)
 
     async def process(self, ctx, data, max_length=1):
         if len(data) <= max_length:

@@ -3,12 +3,12 @@ import random
 
 from dbconn import MusicLinker
 
-args = ['-id', '-t', '-ar', '-su', '-al', '-an', '-yr', '-ss', '-st', '-ln', '-rm', '-tn', '-or', '-c', '-rr', '-rn']
+args_full = ['-id', '-t', '-ar', '-su', '-al', '-an', '-yr', '-ss', '-st', '-ln', '-rm', '-tn', '-or', '-c', '-rr', '-rn']
 
-index_or = args.index('-or')
-index_count = args.index('-c')
-index_rr = args.index('-rr')
-index_rn = args.index('-rn')
+index_or = args_full.index('-or')
+index_count = args_full.index('-c')
+index_rr = args_full.index('-rr')
+index_rn = args_full.index('-rn')
 
 
 def title(data):
@@ -33,7 +33,7 @@ def anime(data, type=''):
     return music.anime(data[0], type)
 
 
-def adv(data):
+def adv(data, args):
     print(data)
     fdata = dict()
     saved_flag = ''
@@ -95,7 +95,7 @@ def randomize(rlist, repeat = 0, count = 1):
     return play
 
 
-def fix_input(raw, special = args):
+def fix_input(raw, special=args_full):
     if special is None:
         special = list()
     text = raw.split()
