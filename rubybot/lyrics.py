@@ -7,7 +7,7 @@ from discord.ext import commands
 
 class Lyrics:
 
-    ll_ids = ('Full_Unit_Singles', 'Printemps', 'BiBi', 'lily_white', 'Mermaid_festa_vol.2_.7EPassionate.7E', 'Otome_Shiki_Ren.27ai_Juku', 'Kokuhaku_Biyori.2C_desu.21', 'soldier_game' , 'Kousaka_Honoka_Solos', 'Sonoda_Umi_Solos', 'Minami_Kotori_Solos')
+    ll_ids = ('Full_Unit_Singles', 'Printemps', 'BiBi', 'lily_white', 'Mermaid_festa_vol.2_.7EPassionate.7E', 'Otome_Shiki_Ren.27ai_Juku', 'Kokuhaku_Biyori.2C_desu.21', 'soldier_game' , 'Kousaka_Honoka_Solos', 'Sonoda_Umi_Solos', 'Minami_Kotori_Solos', 'Love_Live.21_Web_Radio', 'Love_Live.21_TV_Anime_Blu-ray', 'Love_Live.21_TV_Anime_2_Blu-ray', 'Love_Live.21_Movie_Blu-ray')
     ss_ids = ('Full_Unit_Singles', 'CYaRon.21', 'AZALEA', 'Guilty_Kiss')
     base = 'http://love-live.wikia.com'
 
@@ -17,7 +17,13 @@ class Lyrics:
     lang = ('romaji', 'kanji', 'english')
 
     links = dict()
-    alts = dict()
+    swaps = {'Blueberry Train':'Blueberry♥Train', 'Gay Garden':'Garasu no Hanazono', 'Susume Tomorrow':'Susume→Tomorrow',
+             'Susume->Tomorrow':'Susume→Tomorrow', 'Start Dash!!':'START:DASH!!', 'Music Start':'Music S.T.A.R.T!!',
+             'Kira Kira Sensation':'KiRa-KiRa Sensation!', 'Shangrila Shower':'Shangri-La Shower',
+             'Mi wa Music no Mi':"Mi wa Mu'sic no Mi'", 'Super LOVE Super LIVE':'Super LOVE=Super LIVE!',
+             '?<-Heartbeat':'？←HEARTBEAT', 'Hatena Heartbeat':'？←HEARTBEAT', 'Bokuhika':'Bokutachi wa Hitotsu no Hikari',
+             'puwapuwao':'Puwa Puwa-O!', 'puwapuwa o':'Puwa Puwa-O!', 'itsudemo':'Eien Friends', 'waowao powerful day':'WAO-WAO Powerful day!',
+             'wao wao powerful day':'WAO-WAO Powerful day!', 'Anone ganbare':'A-NO-NE-GA-N-BA-RE!', "OtomeShiki Ren'ai Juku":"Otome Shiki Ren'ai Juku "}
     code_block = '```'
 
     max_char = 2000
@@ -41,15 +47,20 @@ class Lyrics:
             else:
                 data_01 = ll_soup.find(id=self.ll_ids[x]).parent.next_sibling.next_sibling.children
             for child in data_01:
-                data_02 = child.find('ol')
-                if not (data_02 == -1 or data_02 is None):
-                    for title in data_02.children:
-                        for obj in title:
-                            if len(obj.string.strip()) > 0:
-                                try:
-                                    self.links[obj.string] = obj.attrs['href']
-                                except AttributeError:
-                                    pass
+                try:
+                    data_02 = child.find_all('ol')
+                except AttributeError:
+                    continue
+                for data_03 in data_02:
+                    if not (data_03 == -1 or data_03 is None):
+                        for title in data_03.children:
+                            for obj in title:
+                                if len(obj.string.strip()) > 0:
+                                    try:
+                                        self.links[obj.string] = obj.attrs['href']
+                                        self.swaps[obj.string] = obj.string
+                                    except AttributeError:
+                                        pass
 
     def ss_crawl(self):
         ss = requests.get(self.base + '/wiki/Love_Live!_Sunshine!!').content
@@ -69,6 +80,7 @@ class Lyrics:
                             if len(obj.string.strip()) > 0:
                                 try:
                                     self.links[obj.string] = obj.attrs['href']
+                                    self.swaps[obj.string] = obj.string
                                 except AttributeError:
                                     pass
 
@@ -78,7 +90,6 @@ class Lyrics:
         Retrieves lyrics of a Love Live! song. Defaults to romaji if no language is specified.
         :param title: Title of the song to retrieve lyrics for. Currently, the match must be exact with the title given on the wikia.
         """
-        print(title)
         if ctx.invoked_subcommand is None:
             await self.get_lyrics(title)
 
@@ -107,7 +118,8 @@ class Lyrics:
         await self.get_lyrics(title, self.lang[2])
 
     async def get_lyrics(self, title:str, language:str=lang[0]):
-        title = title.strip()
+        title = self.sub_title(title)
+        print(title)
         if title not in self.links.keys():
             await self.bot.say(
                 "Sorry, please input an exact title (from the wikia) for now! This will be updated in the future, don't worry!")
@@ -148,4 +160,10 @@ class Lyrics:
         return self.code_block + msg + self.code_block
 
     def sub_title(self, title):
-        re.compile(title)
+        regex = re.compile('.*'+title+'.*', re.IGNORECASE)
+
+        for key in self.swaps.keys():
+            if regex.match(key):
+                return self.swaps[key]
+
+
