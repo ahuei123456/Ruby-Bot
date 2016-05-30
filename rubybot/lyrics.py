@@ -7,7 +7,7 @@ from discord.ext import commands
 
 class Lyrics:
 
-    ll_ids = ('Full_Unit_Singles', 'Printemps', 'BiBi', 'lily_white', 'Mermaid_festa_vol.2_.7EPassionate.7E', 'Otome_Shiki_Ren.27ai_Juku', 'Kokuhaku_Biyori.2C_desu.21', 'soldier_game' , 'Kousaka_Honoka_Solos', 'Sonoda_Umi_Solos', 'Minami_Kotori_Solos', 'Love_Live.21_Web_Radio', 'Love_Live.21_TV_Anime_Blu-ray', 'Love_Live.21_TV_Anime_2_Blu-ray', 'Love_Live.21_Movie_Blu-ray')
+    ll_ids = ('Full_Unit_Singles', 'Printemps', 'BiBi', 'lily_white', 'Mermaid_festa_vol.2_.7EPassionate.7E', 'Otome_Shiki_Ren.27ai_Juku', 'Kokuhaku_Biyori.2C_desu.21', 'soldier_game' , 'Kousaka_Honoka_Solos', 'Sonoda_Umi_Solos', 'Minami_Kotori_Solos', 'Love_Live.21_Web_Radio', 'Love_Live.21_TV_Anime_Blu-ray', 'Love_Live.21_TV_Anime_2_Blu-ray', 'Love_Live.21_Movie_Blu-ray', '.CE.BC.27s_.E2.86.92NEXT_LoveLive.21_2014_.7EENDLESS_PARADE.7E_Special_CD', '.CE.BC.27s_Go.E2.86.92Go.21_LoveLive.21_2015_.7EDream_Sensation.21.7E_Special_CD')
     ss_ids = ('Full_Unit_Singles', 'CYaRon.21', 'AZALEA', 'Guilty_Kiss')
     base = 'http://love-live.wikia.com'
 
