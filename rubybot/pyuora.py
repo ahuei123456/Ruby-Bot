@@ -17,7 +17,7 @@ class Pyuora:
         self.bot = bot
 
         self.init_twitter(r'files\twitter.txt')
-        self.init_insta(r'files\insta.txt')
+        #self.init_insta(r'files\insta.txt')
 
     @commands.command(name='mimo', pass_context=True, no_pm=True)
     async def mimo(self, ctx):
