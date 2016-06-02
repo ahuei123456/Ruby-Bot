@@ -23,7 +23,7 @@ class Lyrics:
              'Mi wa Music no Mi':"Mi wa Mu'sic no Mi'", 'Super LOVE Super LIVE':'Super LOVE=Super LIVE!',
              '?<-Heartbeat':'？←HEARTBEAT', 'Hatena Heartbeat':'？←HEARTBEAT', 'Bokuhika':'Bokutachi wa Hitotsu no Hikari',
              'puwapuwao':'Puwa Puwa-O!', 'puwapuwa o':'Puwa Puwa-O!', 'itsudemo':'Eien Friends', 'waowao powerful day':'WAO-WAO Powerful day!',
-             'wao wao powerful day':'WAO-WAO Powerful day!', 'Anone ganbare':'A-NO-NE-GA-N-BA-RE!', "OtomeShiki Ren'ai Juku":"Otome Shiki Ren'ai Juku "}
+             'wao wao powerful day':'WAO-WAO Powerful day!', 'Anone ganbare':'A-NO-NE-GA-N-BA-RE!', "OtomeShiki Renai Juku":"Otome Shiki Ren'ai Juku "}
     code_block = '```'
 
     max_char = 2000
