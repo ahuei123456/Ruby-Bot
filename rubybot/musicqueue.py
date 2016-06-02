@@ -1,6 +1,6 @@
 import asyncio
 import discord
-import textparse
+import utilities
 import random
 import texttable
 import dbconn
@@ -35,9 +35,10 @@ class MusicQueue:
 
     char_limit_suggest = 160
 
-    def __init__(self, bot):
+    def __init__(self, bot, music):
         self.bot = bot
         self.song_play = '!play'
+        self.music = music
 
         self.id_admin = '144803988963983360'
 
@@ -76,8 +77,8 @@ class MusicQueue:
         :param title: Song title to search for
         """
 
-        output = textparse.fix_input(title)
-        data = textparse.title(output)
+        output = utilities.fix_input(title)
+        data = utilities.title(output)
         if len(data) == 0:
             await self.error_results_not_found(title)
         else:
@@ -90,14 +91,14 @@ class MusicQueue:
         If multiple albums match the search term, a list of matching albums is displayed.
         :param album: Song album to search for
         """
-        output = textparse.fix_input(album)
-        albums = textparse.albums(output)
+        output = utilities.fix_input(album)
+        albums = utilities.albums(output)
         if len(albums) > 1:
             await self.print_table(ctx, self.error_excess_results.format(output), albums, self.tbl_album_list)
         elif len(albums) == 0:
             await self.error_results_not_found(album)
         else:
-            data = textparse.album(output)
+            data = utilities.album(output)
             await self.process(ctx, data, len(data))
 
     @db.group(name='anime', pass_context=True, no_pm=True)
@@ -114,8 +115,8 @@ class MusicQueue:
         elif anime.startswith('ending'):
             anime = anime.replace('ending', '', 1).strip()
             category = 'ending'
-        output = textparse.fix_input(anime)
-        data = textparse.anime(output, category)
+        output = utilities.fix_input(anime)
+        data = utilities.anime(output, category)
         await self.process(ctx, data, len(data))
 
     @anime.command(name='opening', pass_context=True, no_pm=True)
@@ -143,8 +144,8 @@ class MusicQueue:
         If no songs match the search term, an error is displayed.
         :param code: Song code to search for
         """
-        output = textparse.fix_input(code)
-        data = textparse.code(output)
+        output = utilities.fix_input(code)
+        data = utilities.code(output)
         if len(data) == 0:
             await self.error_results_not_found(code)
         else:
@@ -152,8 +153,8 @@ class MusicQueue:
 
     @db.command(name='search', pass_context=True, no_pm=True)
     async def search(self, ctx, *, search: str):
-        output = textparse.fix_input(search)
-        data = textparse.adv(output)
+        output = utilities.fix_input(search)
+        data = utilities.adv(output)
         await self.process(ctx, data, len(data))
 
     @db.command(name='list', pass_context=True, no_pm=True)
@@ -163,8 +164,8 @@ class MusicQueue:
         :param search: A string containing arguments and parameters to search the database with. If no arguments are passed, all the songs in the database are PM'd.
         :return:
         """
-        output = textparse.fix_input(search)
-        data = textparse.adv(output)
+        output = utilities.fix_input(search)
+        data = utilities.adv(output)
         await self.pm_list(ctx, data)
 
     @db.command(name='download')
@@ -177,7 +178,7 @@ class MusicQueue:
         await self.bot.upload(fp='files\music.db', content='Current database:')
 
     # Suggestion commands from here onward
-    @commands.command(name='suggest', pass_context=True, no_pm=True)
+    @commands.command(name='suggest', pass_context=True)
     async def suggest(self, ctx, *, suggestion: str):
         """
         Suggest something for the bot!
@@ -186,66 +187,63 @@ class MusicQueue:
         if ctx.invoked_subcommand is None:
             suggestion = suggestion.strip()
             if len(suggestion) <= 160:
-                textparse.suggest(ctx.message.author.id, suggestion)
+                utilities.suggest(ctx.message.author.id, suggestion)
                 await self.bot.say('Suggestion "{0}" has been added successfully!'.format(suggestion))
             else:
                 await self.error_long_suggestion()
 
     @commands.command(name='read', pass_context=True, hidden=True)
     async def _read(self, ctx):
-        if ctx.message.author.id == self.id_admin:
-            data = textparse.read()
-            print(data)
-            await self.print_table(ctx, self.results_read, data, self.tbl_suggest, len(data), True)
+        await self.retrieve_suggestion(ctx, 'read')
 
     @commands.command(name='reject', pass_context=True, hidden=True)
     async def _reject(self, ctx, *, reason: str):
-        if ctx.message.author.id == self.id_admin:
-            data = reason.split()
-            try:
-                num = int(data[0])
-                reason = ' '.join(data[1:])
-                hunt = textparse.reject(num, reason)
-                member = ctx.message.server.get_member(str(hunt[0]))
-                if member is not None:
-                    await self.bot.send_message(member, self.results_reject.format(hunt[1], hunt[2]))
-            except TypeError:
-                await self.bot.whisper(self.error_invalid_id)
+        await self.update_suggestion(ctx, reason, 'reject')
 
     @commands.command(name='accept', pass_context=True, hidden=True)
     async def _accept(self, ctx, *, reason: str):
-        if ctx.message.author.id == self.id_admin:
-            data = reason.split()
-            try:
-                num = int(data[0])
-                reason = ' '.join(data[1:])
-                hunt = textparse.accept(num, reason)
-                member = ctx.message.server.get_member(str(hunt[0]))
-                if member is not None:
-                    await self.bot.send_message(member, self.results_accept.format(hunt[1], hunt[2]))
-            except TypeError:
-                await self.bot.whisper(self.error_invalid_id)
+        await self.update_suggestion(ctx, reason, 'accept')
 
     @commands.command(name='accepted', pass_context=True, hidden=True)
     async def _accepted(self, ctx):
-        if ctx.message.author.id == self.id_admin:
-            data = textparse.accepted()
-            print(data)
-            await self.print_table(ctx, self.results_accepted, data, self.tbl_suggest, len(data), True)
+        await self.retrieve_suggestion(ctx, 'accepted')
 
     @commands.command(name='finish', pass_context=True, hidden=True)
     async def _finish(self, ctx, *, reason: str):
-        if ctx.message.author.id == self.id_admin:
+        await self.update_suggestion(ctx, reason, 'finish')
+
+    async def update_suggestion(self, ctx, reason: str, update_type: str):
+        if self.admin_message(ctx.message):
             data = reason.split()
             try:
                 num = int(data[0])
                 reason = ' '.join(data[1:])
-                hunt = textparse.finish(num, reason)
-                member = ctx.message.server.get_member(str(hunt[0]))
+                if update_type == 'reject':
+                    hunt = utilities.reject(num, reason)
+                    header = self.results_reject
+                elif update_type == 'accept':
+                    hunt = utilities.accept(num, reason)
+                    header = self.results_accept
+                elif update_type == 'finish':
+                    hunt = utilities.finish(num, reason)
+                    header = self.results_finish
+
+                member = self.find_member(hunt[0])
                 if member is not None:
-                    await self.bot.send_message(member, self.results_finish.format(hunt[1], hunt[2]))
+                    await self.bot.send_message(member, header.format(hunt[1], hunt[2]))
             except TypeError:
                 await self.bot.whisper(self.error_invalid_id)
+
+    async def retrieve_suggestion(self, ctx, retrieve_type):
+        if self.admin_message(ctx.message):
+            if retrieve_type == 'read':
+                data = utilities.read()
+                header = self.results_read
+            elif retrieve_type == 'accepted':
+                data = utilities.accepted()
+                header = self.results_accepted
+
+            await self.print_table(ctx, header, data, self.tbl_suggest, len(data), True)
 
     async def pm_list(self, ctx, data):
         await self.print_table(ctx, self.search_results, self.get_song_info(data),
@@ -268,7 +266,8 @@ class MusicQueue:
 
     async def print_table(self, ctx, msg, data, titles, limit=tbl_limit, pm=False):
         del_later = list()
-        del_later.append(ctx.message)
+        if not pm:
+            del_later.append(ctx.message)
         error = msg + '\n'
         msg = None
         if len(data) <= limit:
@@ -336,3 +335,15 @@ class MusicQueue:
             info.append(_info)
 
         return info
+
+    def find_member(self, id):
+        id = str(id)
+        servers = list(self.bot.servers)
+        for server in servers:
+            members = list(server.members)
+            for member in members:
+                if member.id == id:
+                    return member
+
+    def admin_message(self, msg):
+        return msg.author.id == self.id_admin
