@@ -1,11 +1,12 @@
 import asyncio
 import discord
-import textparse
+import utilities
 import random
 import texttable
-import musicqueue
+import music
 import pyuora
 import lyrics
+import playlist
 
 from discord.ext import commands
 
@@ -68,7 +69,7 @@ If a subcommand is not called, a random qaz quote is displayed."""
 
 bot = commands.Bot(command_prefix=commands.when_mentioned_or('~'), description=info)
 bot.add_cog(Qaz(bot, 'files\qaz.txt'))
-bot.add_cog(musicqueue.MusicQueue(bot))
+bot.add_cog(music.Music(bot))
 bot.add_cog(pyuora.Pyuora(bot))
 bot.add_cog(lyrics.Lyrics(bot))
 token_file = open(r'files\token.txt', 'r')
