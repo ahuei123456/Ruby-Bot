@@ -39,6 +39,33 @@ class Pyuora:
         for msg in msgs:
             await self.bot.say(msg)
 
+    @commands.command(name='yuyucm', no_pm=True)
+    async def yuyucm(self, index: str=''):
+        """
+        Gives a small introduction to our lovely Pure Oral Girl!
+        """
+        try:
+            ind = int(index)
+        except ValueError:
+            index = None
+        if index is None:
+            shimu = self.api_twitter.get_user('yuyucm')
+            await self.bot.say("@yuyucm is the cutest 3D idol in the world!\nHer official twitter is <{0}> and her profile image is: {1}".format('https://twitter.com/yuyucm', shimu.profile_image_url.replace('_normal', '')))
+        else:
+            await self.send_media('yuyucm', ind)
+
+    @commands.command(name='insti', no_pm=True)
+    async def insti(self, index: str = ''):
+        """
+        Display a tweet from our lovely tumblr user!
+        """
+        try:
+            ind = int(index)
+        except ValueError:
+            ind = 0
+
+        await self.send_tweets('Instigare', ind)
+
     def get_tsun(self, index: str):
         r = requests.get('https://www.instagram.com/tsuntsunlive/')
         html = r.content
@@ -100,4 +127,100 @@ class Pyuora:
         client_secret = comp[1]
         self.api_insta = InstagramAPI(access_token=access_token, client_secret=client_secret)
 
+    async def send_tweets(self, id: str, index: int=0):
+        statuses = self.get_tweets(id)
+
+        if index >= len(statuses) - 1 or index <= 0:
+            index = 1
+        status = statuses[index - 1]
+        await self.bot.say(status.text)
+
+        urls = ''
+        for url in self.get_media(status):
+            urls += url + ' '
+
+        urls = urls.strip()
+        if len(urls) > 0:
+            await self.bot.say(urls)
+
+    async def send_tweet_with_media(self, id: str, index: int=0):
+        statuses = self.get_tweets(id)
+
+        for status in statuses[:]:
+            media_urls = self.get_media(status)
+            if self.is_retweet(status) or self.is_reply(status) or len(media_urls) == 0:
+                statuses.remove(status)
+
+        if index >= len(statuses) - 1 or index <= 0:
+            index = 1
+        status = statuses[index - 1]
+        await self.bot.say(status.text)
+
+        urls = ''
+        for url in self.get_media(status):
+            urls += url + ' '
+
+        urls = urls.strip()
+        if len(urls) > 0:
+            await self.bot.say(urls)
+
+    async def send_media(self, id: str, index: int = 0):
+        statuses = self.get_tweets(id)
+
+        for status in statuses[:]:
+            media_urls = self.get_media(status)
+            if self.is_retweet(status) or self.is_reply(status) or len(media_urls) == 0:
+                statuses.remove(status)
+
+        if index >= len(statuses) - 1 or index <= 0:
+            index = 1
+        status = statuses[index - 1]
+
+        urls = ''
+        for url in self.get_media(status):
+            urls += url + ' '
+
+        urls = urls.strip()
+        if len(urls) > 0:
+            await self.bot.say(urls)
+
+    def get_tweets(self, id: str):
+        statuses = list(tweepy.Cursor(self.api_twitter.user_timeline, id=id).items(100))
+        return statuses
+
+    def is_retweet(self, status):
+        return hasattr(status, 'retweeted_status')
+
+    def is_reply(self, status):
+        return status.in_reply_to_status_id is not None
+
+    def get_media(self, status):
+        media_urls = []
+
+        if 'media' in status.entities:
+            for media in status.entities['media']:
+                media_urls.append(media['media_url'])
+
+        return media_urls
+
+    def test(self):
+        statuses = list(tweepy.Cursor(self.api_twitter.user_timeline, id='instigare').items(50))
+        # print(statuses[3].text)
+
+        '''for item in statuses:
+            if (hasattr(item, 'retweeted_status')):
+                print('is retweet')
+            else:
+                print('not retweet')
+
+            print(item.in_reply_to_status_id)
+        '''
+        # if 'retweeted_status' in item:
+        #    print(dir(item.retweeted_status))
+
+        # for entity in statuses[3].entities:
+        #    print(entity)
+        print((statuses[32].entities.keys()))
+        print(statuses[32].entities['media'])
+        print(self.get_media(statuses[31]))
 
