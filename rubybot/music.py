@@ -8,7 +8,7 @@ import dbconn
 from discord.ext import commands
 
 
-class MusicQueue:
+class Music:
     search_results = 'Here are the results of your search:'
     results_read = 'Here are the currently unanswered suggestions:'
     results_accepted = 'Here are the currently unfinished unanswered suggestions:'
