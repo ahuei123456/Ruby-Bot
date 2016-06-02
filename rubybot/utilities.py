@@ -18,7 +18,7 @@ def title(data):
 
 
 def code(data):
-    return music.code(data)
+    return music.code(data[0])
 
 
 def album(data):
