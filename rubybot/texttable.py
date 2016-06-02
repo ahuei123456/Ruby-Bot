@@ -1,5 +1,4 @@
 def print_table(table, max_char):
-    print(table)
     if table:
         if len(table) > 0:
             if len(table[0]) > 0:
