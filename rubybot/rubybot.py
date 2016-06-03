@@ -5,12 +5,13 @@ import random
 import texttable
 import music
 import pyuora
-import lyrics
+import info
 import playlist
+import repeater
 
 from discord.ext import commands
 
-info = "Ruby Bot, your one-stop solution for music queueing! (Now updated with commands.ext)\nNow updated with lyrical display! Use lyrics <title> to display the lyrics of any muse song.\nThank you for using Ruby Bot!"
+information = "Ruby Bot, your one-stop solution for music queueing! (Now updated with commands.ext)\nNow updated with lyrical display! Use lyrics <title> to display the lyrics of any muse song.\nThank you for using Ruby Bot!"
 excess_results = 'Your search returned too many results!'
 search_results = 'Here are the results of your search:'
 com_del_delay = 3
@@ -20,9 +21,9 @@ ann_del_delay = 30
 tbl_limit = 12
 
 class Qaz:
-    def __init__(self, bot, filename):
+    def __init__(self, bot):
         self.bot = bot
-        self.filename = filename
+        self.filename = 'files\qaz.txt'
         self.qaz_file = open(self.filename, 'r')
         self.qaz_list = dict()
         
@@ -67,11 +68,12 @@ If a subcommand is not called, a random qaz quote is displayed."""
         print(list(self.qaz_list.keys()))
 
 
-bot = commands.Bot(command_prefix=commands.when_mentioned_or('~'), description=info)
-bot.add_cog(Qaz(bot, 'files\qaz.txt'))
+bot = commands.Bot(command_prefix=commands.when_mentioned_or('~'), description=information)
+bot.add_cog(Qaz(bot))
 bot.add_cog(music.Music(bot))
-bot.add_cog(pyuora.Pyuora(bot))
-bot.add_cog(lyrics.Lyrics(bot))
+#bot.add_cog(pyuora.Pyuora(bot))
+bot.add_cog(info.Info(bot))
+bot.add_cog(repeater.Repeater(bot))
 token_file = open(r'files\token.txt', 'r')
 token = token_file.read().strip()
 token_file.close()

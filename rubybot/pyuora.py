@@ -8,6 +8,16 @@ from discord.ext import commands
 from instagram import InstagramAPI
 
 
+class LLWikiaListener(tweepy.StreamListener):
+
+    def __init__(self, bot, channel):
+        self.bot = bot
+        self.channel = channel
+
+    def on_status(self, status):
+        print(status.text)
+
+
 class Pyuora:
 
     api_twitter = None
