@@ -118,7 +118,8 @@ class MusicLinker(object):
         return self.advanced(anime=anime, category=type)
 
     def albums(self, album):
-        sql = 'SELECT DISTINCT album FROM music WHERE album LIKE ? ORDER BY album COLLATE NOCASE'
+        print(album)
+        sql = 'SELECT DISTINCT album FROM {0} WHERE album LIKE ? ORDER BY album COLLATE NOCASE'.format(table_music)
         results = self.cursor.execute(sql, ['%' + album + '%'])
         data = results.fetchall()
         return data
