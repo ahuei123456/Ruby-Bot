@@ -363,8 +363,8 @@ class Music:
             await self.play_song(ctx, link)
 
     async def play_song(self, ctx, link):
-        summoned_channel = ctx.message.author.voice_channel
-        if summoned_channel is None:
+        summoned_channel = self.bot.is_voice_connected(ctx.message.server)
+        if not summoned_channel:
             msg = await self.bot.say(self.song_play + ' ' + link)
             await asyncio.sleep(self.delay_del_play)
             await self.bot.delete_message(msg)
@@ -408,6 +408,7 @@ class Music:
     def admin_message(self, msg):
         return msg.author.id == self.id_admin
 
+    ######### PLAYLIST #########
     ######### MUSICBOT #########
     def get_voice_state(self, server):
         state = self.voice_states.get(server.id)
