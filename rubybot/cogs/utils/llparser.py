@@ -49,8 +49,6 @@ class LLParser:
                             try:
                                 if len(obj.string.strip()) > 1 and 'href' in list(obj.attrs.keys()):
                                     try:
-                                        #print(obj.string + ' ' + obj.attrs['href'])
-                                        #print(obj.attrs['href'])
                                         self.links[obj.string] = obj.attrs['href']
                                         self.swaps[obj.string] = obj.string
                                     except AttributeError:
