@@ -23,7 +23,7 @@ class LLWikiaListener(tweepy.StreamListener):
 
         if self.is_reply(status):
             return
-        if not str(status.user.id) == self.id:
+        if not str(status.user.id) in self.id:
             return
         user = status.user.name
         text = status.text
@@ -441,15 +441,20 @@ class Info:
     def init_strim(self):
         # llwikia 2734031000
         # mkyischy 3299062544
-        id = '2734031000'
+        id = ['2734031000', '3299062544']
         self.wikia_listener = LLWikiaListener(id)
         self.wikia_poster = tweepy.Stream(auth=self.auth, listener=self.wikia_listener)
-        self.wikia_poster.filter(follow=[id], async=True)
+        self.wikia_poster.filter(follow=id, async=True)
         self.loop = None
 
-    def print_id(self):
-        insti = self.api_twitter.get_user('mkyischy')
-        print(insti.id)
+    @commands.command(name='twit_id', hidden=True)
+    async def print_id(self, twitter_id: str):
+        twitter_id = twitter_id.strip()
+        try:
+            insti = self.api_twitter.get_user(twitter_id)
+            await self.bot.say(insti.id)
+        except Exception as e:
+            await self.bot.say(e)
 
 
 def setup(bot):
