@@ -8,7 +8,7 @@ import codecs
 
 from instagram import InstagramAPI
 from discord.ext import commands
-from tweepy.auth import OAuthHandler
+from cogs.utils import utilities
 
 
 class LLWikiaListener(tweepy.StreamListener):
@@ -74,7 +74,7 @@ class Info:
         self.ll_crawl()
         self.ss_crawl()
 
-        self.init_twitter(r'files\twitter.txt')
+        self.init_twitter()
         self.init_strim()
 
     def ll_crawl(self):
@@ -319,16 +319,13 @@ class Info:
         data = [img, caption]
         return data
 
-    def init_twitter(self, filename: str):
-        data = open(filename)
-        comp = list()
-        for line in data:
-            comp.append(line.strip())
+    def init_twitter(self):
+        credentials = utilities.load_credentials()
 
-        c_key = comp[0]
-        c_secret = comp[1]
-        a_token = comp[2]
-        a_secret = comp[3]
+        c_key = credentials['client_key']
+        c_secret = credentials['client_secret']
+        a_token = credentials['access_token']
+        a_secret = credentials['access_secret']
         self.auth = tweepy.OAuthHandler(c_key, c_secret)
         self.auth.set_access_token(a_token, a_secret)
 
@@ -455,8 +452,6 @@ class Info:
         print(insti.id)
 
 
-
-#info = Info(None)
-#info.print_id()
-#info.test_strim()
+def setup(bot):
+    bot.add_cog(Info(bot))
 

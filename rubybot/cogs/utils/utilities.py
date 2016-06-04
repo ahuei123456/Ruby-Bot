@@ -1,7 +1,8 @@
-import dbconn
 import random
-
-from dbconn import MusicLinker
+import os
+import json
+from cogs.utils import dbconn
+from cogs.utils.dbconn import MusicLinker
 
 args_full = ['-id', '-t', '-ar', '-su', '-al', '-an', '-yr', '-ss', '-st', '-ln', '-rm', '-tn', '-or', '-c', '-rr', '-rn']
 
@@ -158,5 +159,11 @@ def accepted():
 
 def finish(id: int, reason: str):
     return music.suggestion_finish(id, reason)
+
+
+def load_credentials():
+    path = os.path.join(os.getcwd(), 'files', 'credentials.json')
+    with open(path) as f:
+        return json.load(f)
 
 music = MusicLinker('files\music.db')

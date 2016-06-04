@@ -1,10 +1,9 @@
 import asyncio
-import discord
-import utilities
-import texttable
-import dbconn
 
+import discord
 from discord.ext import commands
+
+from cogs.utils import dbconn, texttable, utilities
 
 if not discord.opus.is_loaded():
     # the 'opus' library here is opus.dll on windows
@@ -575,3 +574,6 @@ class Music:
         else:
             skip_count = len(state.skip_votes)
             await self.bot.say('Now playing {} [skips: {}/3]'.format(state.current, skip_count))
+
+def setup(bot):
+    bot.add_cog(Music(bot))
