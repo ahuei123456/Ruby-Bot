@@ -9,6 +9,7 @@ import codecs
 from instagram import InstagramAPI
 from discord.ext import commands
 from cogs.utils import utilities
+from cogs.utils import llparser
 
 
 class LLWikiaListener(tweepy.StreamListener):
@@ -37,7 +38,7 @@ class LLWikiaListener(tweepy.StreamListener):
         self.statuses.append(send)
 
     def is_reply(self, status):
-        return status.in_reply_to_status_id is not None
+        return status.in_reply_to_user_id is not None and status.in_reply_to_user_id != status.user.id
 
     def get_status(self):
         statuses = self.statuses[:]
@@ -46,86 +47,12 @@ class LLWikiaListener(tweepy.StreamListener):
 
 
 class Info:
-
-    ll_ids = ('Full_Unit_Singles', 'Printemps', 'BiBi', 'lily_white', 'Mermaid_festa_vol.2_.7EPassionate.7E', 'Otome_Shiki_Ren.27ai_Juku', 'Kokuhaku_Biyori.2C_desu.21', 'soldier_game' , 'Kousaka_Honoka_Solos', 'Sonoda_Umi_Solos', 'Minami_Kotori_Solos', 'Love_Live.21_Web_Radio', 'Love_Live.21_TV_Anime_Blu-ray', 'Love_Live.21_TV_Anime_2_Blu-ray', 'Love_Live.21_Movie_Blu-ray', '.CE.BC.27s_.E2.86.92NEXT_LoveLive.21_2014_.7EENDLESS_PARADE.7E_Special_CD', '.CE.BC.27s_Go.E2.86.92Go.21_LoveLive.21_2015_.7EDream_Sensation.21.7E_Special_CD')
-    ss_ids = ('Full_Unit_Singles', 'CYaRon.21', 'AZALEA', 'Guilty_Kiss')
-    base = 'http://love-live.wikia.com'
-
-    title = 'title'
-    link = 'link'
-
-    lang = ('romaji', 'kanji', 'english')
-
-    links = dict()
-    swaps = {'Blueberry Train':'Blueberry♥Train', 'Gay Garden':'Garasu no Hanazono', 'Susume Tomorrow':'Susume→Tomorrow',
-             'Susume->Tomorrow':'Susume→Tomorrow', 'Start Dash!!':'START:DASH!!', 'Music Start':'Music S.T.A.R.T!!',
-             'Kira Kira Sensation':'KiRa-KiRa Sensation!', 'Shangrila Shower':'Shangri-La Shower',
-             'Mi wa Music no Mi':"Mi wa Mu'sic no Mi'", 'Super LOVE Super LIVE':'Super LOVE=Super LIVE!',
-             '?<-Heartbeat':'？←HEARTBEAT', 'Hatena Heartbeat':'？←HEARTBEAT', 'Bokuhika':'Bokutachi wa Hitotsu no Hikari',
-             'puwapuwao':'Puwa Puwa-O!', 'puwapuwa o':'Puwa Puwa-O!', 'itsudemo':'Eien Friends', 'waowao powerful day':'WAO-WAO Powerful day!',
-             'wao wao powerful day':'WAO-WAO Powerful day!', 'Anone ganbare':'A-NO-NE-GA-N-BA-RE!', "OtomeShiki Renai Juku":"Otome Shiki Ren'ai Juku "}
-    code_block = '```'
-
-    max_char = 2000
-    buffer = 5
-
     def __init__(self, bot):
         self.bot = bot
-        self.ll_crawl()
-        self.ss_crawl()
+        self.llparser = llparser.LLParser()
 
         self.init_twitter()
         self.init_strim()
-
-    def ll_crawl(self):
-        ll = requests.get(self.base + '/wiki/Love_Live!').content
-        ll_soup = bs4.BeautifulSoup(ll, 'html.parser')
-
-        #subunits + duo/trio
-        for x in range(0, len(self.ll_ids)):
-            if x == 0:
-                #special case for full unit singles
-                data_01 = ll_soup.find(
-                    id=self.ll_ids[0]).parent.next_sibling.next_sibling.next_sibling.next_sibling.children
-            else:
-                data_01 = ll_soup.find(id=self.ll_ids[x]).parent.next_sibling.next_sibling.children
-            for child in data_01:
-                try:
-                    data_02 = child.find_all('ol')
-                except AttributeError:
-                    continue
-                for data_03 in data_02:
-                    if not (data_03 == -1 or data_03 is None):
-                        for title in data_03.children:
-                            for obj in title:
-                                if len(obj.string.strip()) > 0:
-                                    try:
-                                        self.links[obj.string] = obj.attrs['href']
-                                        self.swaps[obj.string] = obj.string
-                                    except AttributeError:
-                                        pass
-
-    def ss_crawl(self):
-        ss = requests.get(self.base + '/wiki/Love_Live!_Sunshine!!').content
-        ss_soup = bs4.BeautifulSoup(ss, 'html.parser')
-        for x in range(0, len(self.ss_ids)):
-            if x == 0:
-                # special case for full unit singles
-                data_01 = ss_soup.find(
-                    id=self.ss_ids[0]).parent.next_sibling.next_sibling.next_sibling.next_sibling.children
-            else:
-                data_01 = ss_soup.find(id=self.ss_ids[x]).parent.next_sibling.next_sibling.children
-            for child in data_01:
-                data_02 = child.find('ol')
-                if not (data_02 == -1 or data_02 is None):
-                    for title in data_02.children:
-                        for obj in title:
-                            if len(obj.string.strip()) > 0:
-                                try:
-                                    self.links[obj.string] = obj.attrs['href']
-                                    self.swaps[obj.string] = obj.string
-                                except AttributeError:
-                                    pass
 
     @commands.group(name='lyrics', pass_context=True, invoke_without_command=True)
     async def lyrics(self, ctx, *, title:str):
@@ -142,7 +69,7 @@ class Info:
         Retrieves lyrics of a Love Live! song in Romaji.
         :param title: Title of the song to retrieve lyrics for. Currently, the match must be exact with the title given on the wikia.
         """
-        await self.get_lyrics(title, self.lang[0])
+        await self.get_lyrics(title, self.llparser.lyrics_lang[0])
 
     @lyrics.command(name='kanji', pass_context=True)
     async def kanji(self, ctx, *, title: str):
@@ -150,7 +77,7 @@ class Info:
         Retrieves lyrics of a Love Live! song in Kanji.
         :param title: Title of the song to retrieve lyrics for. Currently, the match must be exact with the title given on the wikia.
         """
-        await self.get_lyrics(title, self.lang[1])
+        await self.get_lyrics(title, self.llparser.lyrics_lang[1])
 
     @lyrics.command(name='english', pass_context=True)
     async def english(self, ctx, *, title: str):
@@ -158,56 +85,15 @@ class Info:
         Retrieves lyrics of a Love Live! song in English.
         :param title: Title of the song to retrieve lyrics for. Currently, the match must be exact with the title given on the wikia.
         """
-        await self.get_lyrics(title, self.lang[2])
+        await self.get_lyrics(title, self.llparser.lyrics_lang[2])
 
-    async def get_lyrics(self, title:str, language:str=lang[0]):
-        title = self.sub_title(title)
-        print(title)
-        if title not in self.links.keys():
-            await self.bot.say(
-                "Sorry, please input an exact title (from the wikia) for now! This will be updated in the future, don't worry!")
-            return
-        link = self.links[title]
-        link = self.base + link
-        song = requests.get(link).content
-        song_soup = bs4.BeautifulSoup(song, 'html.parser')
-
-        index = self.lang.index(language)
-
-        data_01 = song_soup.find_all(class_='poem')
-        await self.msg_lyrics(data_01[index].get_text().split('\n\n'), title=title, link=link)
-
-    async def msg_lyrics(self, lyrics:list, **kwargs):
-        header = ''
-        keys = list(kwargs.keys())
-        if self.title in keys:
-            header += kwargs[self.title] + ' '
-        if self.link in keys:
-            header += '<' + kwargs[self.link] + '>'
-
-        if len(header) > 0:
-            header = header.strip() + '\n'
-
-        msg = ''
-        for para in lyrics:
-            if len(msg) + len(para) + len(header) < self.max_char - len(self.code_block) * 2 - self.buffer:
-                msg += para + '\n\n'
-            else:
-                await self.bot.say('\n'.join((header, self.code(msg.strip()))).strip())
-                msg = para + '\n\n'
-                header = ''
-        if len(msg) > 0:
-            await self.bot.say((header + '\n' + self.code(msg.strip())).strip())
-
-    def code(self, msg):
-        return self.code_block + msg + self.code_block
-
-    def sub_title(self, title):
-        regex = re.compile('.*'+title+'.*', re.IGNORECASE)
-
-        for key in self.swaps.keys():
-            if regex.match(key):
-                return self.swaps[key]
+    async def get_lyrics(self, title:str, language:str=None):
+        try:
+            msgs = self.llparser.get_lyrics(title, language)
+            for msg in msgs:
+                await self.bot.say(msg)
+        except ValueError as e:
+            await self.bot.say(e)
 
     @commands.command(name='mimo', pass_context=True, no_pm=True)
     async def mimo(self, ctx):
@@ -418,29 +304,18 @@ class Info:
         return media_urls
 
     def test(self):
-        statuses = list(tweepy.Cursor(self.api_twitter.user_timeline, id='instigare').items(50))
+        statuses = list(tweepy.Cursor(self.api_twitter.user_timeline, id='mkyischy').items(50))
         # print(statuses[3].text)
-
-        '''for item in statuses:
-            if (hasattr(item, 'retweeted_status')):
-                print('is retweet')
-            else:
-                print('not retweet')
-
-            print(item.in_reply_to_status_id)
-        '''
-        # if 'retweeted_status' in item:
-        #    print(dir(item.retweeted_status))
-
-        # for entity in statuses[3].entities:
-        #    print(entity)
-        print((statuses[32].entities.keys()))
-        print(statuses[32].entities['media'])
-        print(self.get_media(statuses[31]))
+        for item in dir(statuses[0]):
+            print(item)
+        #print((statuses[32].entities.keys()))
+        #print(statuses[32].entities['media'])
+        #print(self.get_media(statuses[31]))
 
     def init_strim(self):
         # llwikia 2734031000
-        # mkyischy 3299062544
+        # mkydyrea 3299062544
+        # ll_extra 739117766100189184
         id = ['2734031000', '3299062544']
         self.wikia_listener = LLWikiaListener(id)
         self.wikia_poster = tweepy.Stream(auth=self.auth, listener=self.wikia_listener)
@@ -459,4 +334,5 @@ class Info:
 
 def setup(bot):
     bot.add_cog(Info(bot))
+
 

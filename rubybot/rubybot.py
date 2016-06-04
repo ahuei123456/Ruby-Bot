@@ -1,7 +1,7 @@
 from discord.ext import commands
 from cogs.utils import utilities
 
-information = "Ruby Bot, your one-stop solution for music queueing! (Now updated with commands.ext)\nNow updated with lyrical display! Use lyrics <title> to display the lyrics of any muse song.\nThank you for using Ruby Bot!"
+information = "Ruby Bot, your one-stop solution for music queueing! (Now updated with commands.ext)\nLyrical display updated! Use lyrics <title> to display the lyrics of any LL song!.\nThank you for using Ruby Bot!"
 bot = commands.Bot(command_prefix=commands.when_mentioned_or('~'), description=information)
 
 initial_extensions = ['cogs.music', 'cogs.info', 'cogs.qaz']
