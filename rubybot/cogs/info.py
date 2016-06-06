@@ -14,7 +14,6 @@ class Info:
 
     def __init__(self, bot):
         self.bot = bot
-        self.llparser = llparser.LLParser()
 
     @commands.group(name='lyrics', pass_context=True, invoke_without_command=True)
     async def lyrics(self, ctx, *, title:str):
@@ -51,7 +50,7 @@ class Info:
 
     async def get_lyrics(self, title:str, language:str=None):
         try:
-            msgs = self.parse_lyrics(self.llparser.get_lyrics(title, language))
+            msgs = self.parse_lyrics(llparser.get_lyrics(title, language))
             for msg in msgs:
                 await self.bot.say(msg)
         except ValueError as e:
