@@ -5,7 +5,7 @@ import requests
 from cogs.utils import utilities
 
 user_encode = "Username: {0.screen_name}\nDisplay name: {0.name}\nCurrent profile image: {0.profile_image_url}\nCurrent banner image: {0.profile_banner_url}"
-
+wikia_listener = None
 
 class LLWikiaListener(tweepy.StreamListener):
 
@@ -61,7 +61,7 @@ def init_strim():
     # ll_extra 739117766100189184
     # lovelive_staff 347849994
     # lovelive_sif 1346933186
-    id = ['3299062544', '4423137133', '347849994', '1346933186', '739117766100189184']
+    id = ['2734031000', '3299062544', '4423137133', '347849994', '1346933186', '739117766100189184']
     wikia_listener = LLWikiaListener(id)
     wikia_poster = tweepy.Stream(auth=auth, listener=wikia_listener)
     wikia_poster.filter(follow=id, async=True)
@@ -141,3 +141,4 @@ def is_retweet(status):
 
 
 init_twitter()
+init_strim()

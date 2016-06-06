@@ -289,9 +289,7 @@ class Music:
     async def play_song(self, ctx, link):
         summoned_channel = self.bot.is_voice_connected(ctx.message.server)
         if not summoned_channel:
-            await self.bot.change_nickname(ctx.message.server.me, ctx.message.author.display_name)
             msg = await self.bot.say(self.song_play + ' ' + link)
-            await self.bot.change_nickname(ctx.message.server.me, None)
             await asyncio.sleep(self.delay_del_play)
             await self.bot.delete_message(msg)
         else:

@@ -15,6 +15,12 @@ class Administrative:
     error_suggestion_too_long = 'Your suggestion is too long! Please limit it to 160 characters.'
     tbl_suggest = ('ID', 'Creator', 'Suggestion', 'Status')
 
+    code_block = '```'
+
+    delay_del_command = 3
+    delay_del_play = 1
+    delay_del_announcement = 30
+
     def __init__(self, bot):
         self.bot = bot
 
@@ -97,15 +103,14 @@ class Administrative:
             await self.bot.whisper(self.error_invalid_id)
 
     async def retrieve_suggestion(self, ctx, retrieve_type):
-        if self.admin_message(ctx.message):
-            if retrieve_type == 'read':
-                data = utilities.read()
-                header = self.results_read
-            elif retrieve_type == 'accepted':
-                data = utilities.accepted()
-                header = self.results_accepted
+        if retrieve_type == 'read':
+            data = utilities.read()
+            header = self.results_read
+        elif retrieve_type == 'accepted':
+            data = utilities.accepted()
+            header = self.results_accepted
 
-            await self.print_table(ctx, header, data, self.tbl_suggest, len(data), True)
+        await self.print_table(ctx, header, data, self.tbl_suggest, len(data), True)
 
     async def print_table(self, ctx, msg, data, titles, limit=12, pm=False):
         del_later = list()
@@ -144,6 +149,9 @@ class Administrative:
         await asyncio.sleep(self.delay_del_announcement)
         for msg in del_later:
             await self.bot.delete_message(msg)
+
+    def code(self, msg):
+        return self.code_block + msg + self.code_block
 
 
 def setup(bot):
