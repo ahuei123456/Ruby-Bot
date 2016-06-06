@@ -13,7 +13,7 @@ class LLParser:
              'puwapuwao': 'Puwa Puwa-O!', 'puwapuwa o': 'Puwa Puwa-O!', 'itsudemo': 'Eien Friends',
              'waowao powerful day': 'WAO-WAO Powerful day!',
              'wao wao powerful day': 'WAO-WAO Powerful day!', 'Anone ganbare': 'A-NO-NE-GA-N-BA-RE!',
-             "OtomeShiki Renai Juku": "Otome Shiki Ren'ai Juku ", "Aqours HEROES": "Aqours☆HEROES",
+             "OtomeShiki Renai Juku": "Otome Shiki Ren'ai Juku", "Aqours HEROES": "Aqours☆HEROES",
              "Step ZERO to ONE": "Step! ZERO to ONE"}
 
     wikia_base = 'http://love-live.wikia.com'
@@ -24,13 +24,7 @@ class LLParser:
     title = 'title'
     link = 'link'
 
-
     eng_jp = dict()
-
-
-    max_char = 2000
-    buffer = 5
-    code_block = '```'
 
     def __init__(self):
         self.wikia_crawl()
@@ -61,7 +55,6 @@ class LLParser:
 
     def get_lyrics(self, title: str, language: str = lyrics_lang[0]):
         title = self.sub_title(title)
-        print(title)
         if title not in self.links.keys():
             raise ValueError('Sorry, song title was not found!')
         link = self.links[title]
@@ -75,7 +68,8 @@ class LLParser:
             index = self.lyrics_lang.index(language)
 
         data_01 = song_soup.find_all(class_='poem')
-        return self.msg_lyrics(data_01[index].get_text().split('\n\n'), title=title, link=link)
+        return title, link, data_01[index].get_text()
+        #return self.msg_lyrics(data_01[index].get_text().split('\n\n'), title=title, link=link)
 
     def msg_lyrics(self, lyrics: list, **kwargs):
         msgs = list()
@@ -109,5 +103,4 @@ class LLParser:
             if regex.match(key):
                 return self.swaps[key]
 
-    def code(self, msg):
-        return self.code_block + msg + self.code_block
+
