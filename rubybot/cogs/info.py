@@ -121,16 +121,6 @@ class Info:
         except Exception as e:
             await self.bot.say(e)
 
-    @commands.command()
-    async def invite(self):
-        """
-        Displays an invite link for Ruby Bot.
-        Before adding Ruby Bot to your server, please take into consideration the fact that many of Ruby Bot's features
-        are developed specifically for the /r/LoveLive discord server and may not be compatible with your server.
-        With that in mind, if you still wish to add Ruby Bot to your server, please go ahead.
-        """
-        json = utilities.load_credentials()
-        await self.bot.say('Invite link: ' + json['invite_link'])
 
 
 def setup(bot):

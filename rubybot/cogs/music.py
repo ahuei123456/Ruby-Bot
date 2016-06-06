@@ -65,15 +65,10 @@ class VoiceState:
 
 class Music:
     search_results = 'Here are the results of your search:'
-    results_read = 'Here are the currently unanswered suggestions:'
-    results_accepted = 'Here are the currently unfinished unanswered suggestions:'
-    results_reject = 'Your request: "{0}" has been rejected for the following reason: {1}'
-    results_accept = 'Your request: "{0}" has been accepted with the following comment: {1}'
-    results_finish = 'Congratulations! Your request: "{0}" has been completed with the following remarks: {1}'
     error_excess_results = 'Your search for "{0}" returned too many results!'
     error_excess_results_generic = 'Your search returned too many results!'
     error_no_results = 'Your search for "{0}" returned no results!'
-    error_suggestion_too_long = 'Your suggestion is too long! Please limit it to 160 characters.'
+
     error_invalid_code = 'The code you specified is in an invalid format!'
     error_invalid_id = 'The id you specified is in an invalid format!'
     delay_del_command = 3
@@ -217,7 +212,6 @@ class Music:
         """
         Searches the music database using formatted arguments and PMs the info of all the songs found.
         :param search: A string containing arguments and parameters to search the database with. If no arguments are passed, all the songs in the database are PM'd.
-        :return:
         """
         output = utilities.fix_input(search)
         data = utilities.adv(output)
@@ -227,78 +221,9 @@ class Music:
     async def download(self):
         """
         Retrieves the current music database.
-        :return:
         """
         print('uploading')
         await self.bot.upload(fp='files\music.db', content='Current database:')
-
-    # Suggestion commands from here onward
-    @commands.command(name='suggest', pass_context=True)
-    async def suggest(self, ctx, *, suggestion: str):
-        """
-        Suggest something for the bot!
-        :param suggestion: Your suggestion.
-        """
-        if ctx.invoked_subcommand is None:
-            suggestion = suggestion.strip()
-            if len(suggestion) <= 160:
-                utilities.suggest(ctx.message.author.id, suggestion)
-                await self.bot.say('Suggestion "{0}" has been added successfully!'.format(suggestion))
-            else:
-                await self.error_long_suggestion()
-
-    @commands.command(name='read', pass_context=True, hidden=True)
-    async def _read(self, ctx):
-        await self.retrieve_suggestion(ctx, 'read')
-
-    @commands.command(name='reject', pass_context=True, hidden=True)
-    async def _reject(self, ctx, *, reason: str):
-        await self.update_suggestion(ctx, reason, 'reject')
-
-    @commands.command(name='accept', pass_context=True, hidden=True)
-    async def _accept(self, ctx, *, reason: str):
-        await self.update_suggestion(ctx, reason, 'accept')
-
-    @commands.command(name='accepted', pass_context=True, hidden=True)
-    async def _accepted(self, ctx):
-        await self.retrieve_suggestion(ctx, 'accepted')
-
-    @commands.command(name='finish', pass_context=True, hidden=True)
-    async def _finish(self, ctx, *, reason: str):
-        await self.update_suggestion(ctx, reason, 'finish')
-
-    async def update_suggestion(self, ctx, reason: str, update_type: str):
-        if self.admin_message(ctx.message):
-            data = reason.split()
-            try:
-                num = int(data[0])
-                reason = ' '.join(data[1:])
-                if update_type == 'reject':
-                    hunt = utilities.reject(num, reason)
-                    header = self.results_reject
-                elif update_type == 'accept':
-                    hunt = utilities.accept(num, reason)
-                    header = self.results_accept
-                elif update_type == 'finish':
-                    hunt = utilities.finish(num, reason)
-                    header = self.results_finish
-
-                member = self.find_member(hunt[0])
-                if member is not None:
-                    await self.bot.send_message(member, header.format(hunt[1], hunt[2]))
-            except TypeError:
-                await self.bot.whisper(self.error_invalid_id)
-
-    async def retrieve_suggestion(self, ctx, retrieve_type):
-        if self.admin_message(ctx.message):
-            if retrieve_type == 'read':
-                data = utilities.read()
-                header = self.results_read
-            elif retrieve_type == 'accepted':
-                data = utilities.accepted()
-                header = self.results_accepted
-
-            await self.print_table(ctx, header, data, self.tbl_suggest, len(data), True)
 
     async def pm_list(self, ctx, data):
         await self.print_table(ctx, self.search_results, self.get_song_info(data),
@@ -364,7 +289,9 @@ class Music:
     async def play_song(self, ctx, link):
         summoned_channel = self.bot.is_voice_connected(ctx.message.server)
         if not summoned_channel:
+            await self.bot.change_nickname(ctx.message.server.me, ctx.message.author.display_name)
             msg = await self.bot.say(self.song_play + ' ' + link)
+            await self.bot.change_nickname(ctx.message.server.me, None)
             await asyncio.sleep(self.delay_del_play)
             await self.bot.delete_message(msg)
         else:

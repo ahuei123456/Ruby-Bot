@@ -11,6 +11,7 @@ class Memes:
 
     def __init__(self, bot):
         self.bot = bot
+        self.init_qaz()
 
     def init_qaz(self):
         self.filename = 'files\qaz.txt'
