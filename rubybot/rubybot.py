@@ -1,5 +1,6 @@
 from discord.ext import commands
 from cogs.utils import utilities
+from cogs import streams
 
 information = "Ruby Bot, your one-stop solution for music queueing! (Now updated with commands.ext)\nLyrical display updated! Use lyrics <title> to display the lyrics of any LL song!.\nThank you for using Ruby Bot!"
 bot = commands.Bot(command_prefix=commands.when_mentioned_or('~'), description=information)
@@ -10,6 +11,8 @@ initial_extensions = ['cogs.administrative', 'cogs.music', 'cogs.info', 'cogs.me
 @bot.event
 async def on_ready():
     print('Logged in as:\n{0} (ID: {0.id})'.format(bot.user))
+    posts = streams.Streams(bot)
+    await posts.stream()
 
 if __name__ == "__main__":
 

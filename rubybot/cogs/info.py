@@ -1,7 +1,6 @@
 import asyncio
 
 from discord.ext import commands
-from cogs.utils import utilities
 from cogs.utils import llparser
 from cogs.utils import twitconn
 
@@ -93,24 +92,23 @@ class Info:
         except Exception as e:
             await self.bot.say(e)
 
-    @commands.command(name='stream', pass_context=True, no_pm=True, hidden=True)
-    async def stream(self, ctx):
-        if ctx.message.author.id == '144803988963983360':
-            if self.loop is None:
-                await self.bot.say('Now stalking')
-                self.loop = asyncio.get_event_loop()
-                self.loop.create_task(self.tweet_retriever(ctx.message.channel))
-            else:
-                await self.bot.say('Ending stalking')
-                self.stop_loop = True
-                self.loop = None
+    async def stream(self):
+        if self.loop is None:
+            await self.bot.say('Now stalking')
+            self.loop = asyncio.get_event_loop()
+            self.loop.create_task(self.tweet_retriever())
+        else:
+            await self.bot.say('Ending stalking')
+            self.stop_loop = True
+            self.loop = None
 
-    async def tweet_retriever(self, channel):
+    async def tweet_retriever(self):
         await self.bot.wait_until_ready()
         self.stop_loop = False
         while not self.stop_loop:
             statuses = twitconn.stream_new_tweets()
             while len(statuses) > 0:
+                status = statuses.pop(0)
                 await self.bot.send_message(channel, statuses.pop(0))
             await asyncio.sleep(5)
 

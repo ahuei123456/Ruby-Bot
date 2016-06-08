@@ -4,7 +4,7 @@ import requests
 
 from cogs.utils import utilities
 
-user_encode = "Username: {0.screen_name}\nDisplay name: {0.name}\nCurrent profile image: {0.profile_image_url}\nCurrent banner image: {0.profile_banner_url}"
+user_encode = "Username: {0.screen_name}\nDisplay name: {0.name}\nCurrent profile image: {0.profile_image_url}\nCurrent banner image: {0.profile_banner_url}\nTweets: {0.statuses_count}\nFollowers: {0.followers_count}\nFollowing: {0.friends_count}"
 wikia_listener = None
 
 class LLWikiaListener(tweepy.StreamListener):
