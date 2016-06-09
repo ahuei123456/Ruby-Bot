@@ -13,6 +13,10 @@ async def on_ready():
     print('Logged in as:\n{0} (ID: {0.id})'.format(bot.user))
     posts = streams.Streams(bot)
     await posts.stream()
+    try:
+        bot.add_cog(posts)
+    except Exception:
+        print('couldnt add stream????')
 
 if __name__ == "__main__":
 
@@ -25,6 +29,11 @@ if __name__ == "__main__":
 
     credentials = utilities.load_credentials()
     bot_token = credentials['token']
-    bot.run(bot_token)
+    while True:
+        try:
+            bot.run(bot_token)
+        except Exception:
+            pass
+    print('How da fuck did this get here')
 
 

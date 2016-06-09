@@ -1,11 +1,21 @@
 import tweepy
+import time
+import html
 import bs4
 import requests
 
 from cogs.utils import utilities
 
-user_encode = "Username: {0.screen_name}\nDisplay name: {0.name}\nCurrent profile image: {0.profile_image_url}\nCurrent banner image: {0.profile_banner_url}\nTweets: {0.statuses_count}\nFollowers: {0.followers_count}\nFollowing: {0.friends_count}"
+user_encode = ["Username: {0.screen_name}",
+              "Display name: {0.name}",
+              "Current profile image: {0.profile_image_url}",
+              "Current banner image: {0.profile_banner_url}",
+              "Tweets: {0.statuses_count}",
+              "Followers: {0.followers_count}",
+              "Following: {0.friends_count}"]
+
 wikia_listener = None
+id = ['2734031000', '3299062544', '4423137133', '347849994', '1346933186', '739117766100189184']
 
 class LLWikiaListener(tweepy.StreamListener):
 
@@ -16,21 +26,29 @@ class LLWikiaListener(tweepy.StreamListener):
         self.id = id
 
     def on_status(self, status):
-
-        if is_reply(status):
-            return
-        if not str(status.user.id) in self.id:
-            return
-        user = status.user.name
-        text = status.text
-        send = "Latest tweet by {0}: {1}\n".format(user, text)
         try:
-            for media in status.extended_entities['media']:
-                send += media['media_url'] + ' '
-        except AttributeError:
-            pass
+            if is_reply(status):
+                return
+            if not str(status.user.id) in self.id:
+                return
+            user = html.unescape(status.user.name)
+            text = html.unescape(status.text)
+            send = "Latest tweet by {0}: {1}\n".format(user, text)
+            try:
+                for media in status.extended_entities['media']:
+                    send += media['media_url'] + ' '
+            except AttributeError:
+                pass
 
-        self.statuses.append(send)
+            self.statuses.append(send)
+        except Exception as e:
+            print(e)
+
+    def on_timeout(self):
+        print('timeout')
+
+    def on_error(self, status_code):
+        print(status_code)
 
     def get_status(self):
         statuses = self.statuses[:]
@@ -53,16 +71,32 @@ def init_twitter():
     api_twitter = tweepy.API(auth)
 
 
-def init_strim():
+def init_stream():
     global wikia_listener
+    global wikia_poster
     # ll_wikia 2734031000
     # mkydyrea 3299062544
     # LLupdates 4423137133
     # ll_extra 739117766100189184
     # lovelive_staff 347849994
     # lovelive_sif 1346933186
-    id = ['2734031000', '3299062544', '4423137133', '347849994', '1346933186', '739117766100189184']
+
     wikia_listener = LLWikiaListener(id)
+    wikia_poster = tweepy.Stream(auth=auth, listener=wikia_listener)
+    wikia_poster.filter(follow=id, async=True)
+
+
+def kill_stream():
+    global wikia_poster
+
+    wikia_poster.disconnect()
+    time.sleep(5)
+
+
+def restart_stream():
+    global wikia_listener
+    global wikia_poster
+
     wikia_poster = tweepy.Stream(auth=auth, listener=wikia_listener)
     wikia_poster.filter(follow=id, async=True)
 
@@ -129,7 +163,13 @@ def encode_tweet(tweet):
 
 
 def encode_user(user):
-    return user_encode.format(user)
+    encoded = ''
+    for string in user_encode:
+        try:
+            encoded += string.format(user) + '\n'
+        except AttributeError:
+            pass
+    return encoded.strip()
 
 
 def is_reply(status):
@@ -141,4 +181,4 @@ def is_retweet(status):
 
 
 init_twitter()
-init_strim()
+init_stream()
