@@ -6,17 +6,30 @@ information = "Ruby Bot, your one-stop solution for music queueing! (Now updated
 bot = commands.Bot(command_prefix=commands.when_mentioned_or('~'), description=information)
 
 initial_extensions = ['cogs.administrative', 'cogs.music', 'cogs.info', 'cogs.memes']
+posts = streams.Streams(bot)
 
 
 @bot.event
 async def on_ready():
+    global posts
     print('Logged in as:\n{0} (ID: {0.id})'.format(bot.user))
-    posts = streams.Streams(bot)
     await posts.stream()
     try:
         bot.add_cog(posts)
     except Exception:
         print('couldnt add stream????')
+
+
+@bot.event
+async def on_error(event, *args, **kwargs):
+    print(event)
+    print(str(args))
+    print(str(kwargs))
+
+
+@bot.event
+async def on_resumed():
+    await posts.reboot_stream()
 
 if __name__ == "__main__":
 

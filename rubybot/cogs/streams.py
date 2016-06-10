@@ -49,24 +49,34 @@ class Streams:
     async def reboot(self):
         print('command????')
         await self.bot.say('Attempting to restart stream!')
-        twitconn.kill_stream()
+        await self.kill_stream()
         await self.bot.say('Stream killed!')
         await self.bot.say('Restarting stream...')
-        twitconn.restart_stream()
+        await self.restart_stream()
         await self.bot.say('Restart successful...?')
 
     @commands.command(hidden=True)
     @checks.is_owner()
     async def kill(self):
         await self.bot.say('Killing stream...')
-        twitconn.kill_stream()
+        await self.kill_stream()
         await self.bot.say('Stream killed!')
 
     @commands.command(hidden=True)
     @checks.is_owner()
     async def restart(self):
         await self.bot.say('Restarting stream...')
-        twitconn.restart_stream()
+        await self.restart_stream()
         await self.bot.say('Stream started!')
 
+
+    async def kill_stream(self):
+        twitconn.kill_stream()
+
+    async def restart_stream(self):
+        twitconn.restart_stream()
+
+    async def reboot_stream(self):
+        twitconn.kill_stream()
+        twitconn.restart_stream()
 
