@@ -1,6 +1,8 @@
 from discord.ext import commands
 from cogs.utils import utilities
+from cogs.utils import checks
 from cogs import streams
+import re
 
 information = "Ruby Bot, your one-stop solution for music queueing! (Now updated with commands.ext)\nLyrical display updated! Use lyrics <title> to display the lyrics of any LL song!.\nThank you for using Ruby Bot!"
 bot = commands.Bot(command_prefix=commands.when_mentioned_or('~'), description=information)
@@ -29,7 +31,22 @@ async def on_error(event, *args, **kwargs):
 
 @bot.event
 async def on_resumed():
+    print('Resumed')
     await posts.reboot_stream()
+
+"""
+@bot.event
+async def on_message(message):
+    ch = message.channel
+    msg = message.content.lower()
+    # If the string contains "aquors" and is NOT preceded by a letter and is NOT followed by a letter
+    # (i.e. is not hidden inside a word), then we correct the person. The letter "s" is optional.
+    if checks.is_shig() and re.search(r"(?<![a-zA-Z])aqour(s?)(?![a-zA-Z])", msg) is not None:
+        await bot.send_message(ch, "***AQUORS***")
+
+    await bot.process_commands(message)
+"""
+
 
 if __name__ == "__main__":
 
