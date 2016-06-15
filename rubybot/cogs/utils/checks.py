@@ -1,5 +1,5 @@
 from discord.ext import commands
-import discord.utils
+import discord
 
 def is_owner_check(message):
     return message.author.id == '144803988963983360'

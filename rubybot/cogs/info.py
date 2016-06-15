@@ -29,7 +29,7 @@ class Info:
         Retrieves lyrics of a Love Live! song in Romaji.
         :param title: Title of the song to retrieve lyrics for. Currently, the match must be exact with the title given on the wikia.
         """
-        await self.get_lyrics(title, self.llparser.lyrics_lang[0])
+        await self.get_lyrics(title, llparser.lyrics_lang[0])
 
     @lyrics.command(name='kanji', pass_context=True)
     async def kanji(self, ctx, *, title: str):
@@ -37,7 +37,7 @@ class Info:
         Retrieves lyrics of a Love Live! song in Kanji.
         :param title: Title of the song to retrieve lyrics for. Currently, the match must be exact with the title given on the wikia.
         """
-        await self.get_lyrics(title, self.llparser.lyrics_lang[1])
+        await self.get_lyrics(title, llparser.lyrics_lang[1])
 
     @lyrics.command(name='english', pass_context=True)
     async def english(self, ctx, *, title: str):
@@ -45,7 +45,7 @@ class Info:
         Retrieves lyrics of a Love Live! song in English.
         :param title: Title of the song to retrieve lyrics for. Currently, the match must be exact with the title given on the wikia.
         """
-        await self.get_lyrics(title, self.llparser.lyrics_lang[2])
+        await self.get_lyrics(title, llparser.lyrics_lang[2])
 
     async def get_lyrics(self, title:str, language:str=None):
         try:
@@ -92,25 +92,6 @@ class Info:
         except Exception as e:
             await self.bot.say(e)
 
-    async def stream(self):
-        if self.loop is None:
-            await self.bot.say('Now stalking')
-            self.loop = asyncio.get_event_loop()
-            self.loop.create_task(self.tweet_retriever())
-        else:
-            await self.bot.say('Ending stalking')
-            self.stop_loop = True
-            self.loop = None
-
-    async def tweet_retriever(self):
-        await self.bot.wait_until_ready()
-        self.stop_loop = False
-        while not self.stop_loop:
-            statuses = twitconn.stream_new_tweets()
-            while len(statuses) > 0:
-                status = statuses.pop(0)
-                await self.bot.send_message(channel, statuses.pop(0))
-            await asyncio.sleep(5)
 
     @commands.command(name='twit_id', hidden=True)
     async def print_id(self, twitter_id: str):
@@ -118,6 +99,14 @@ class Info:
             await self.bot.say(twitconn.get_user_id(twitter_id))
         except Exception as e:
             await self.bot.say(e)
+
+    @commands.group()
+    async def sif(self):
+        pass
+
+    @sif.command()
+    async def card(self, num: int):
+        pass
 
 
 
