@@ -7,15 +7,18 @@ import requests
 from cogs.utils import utilities
 
 user_encode = ["Username: {0.screen_name}",
-              "Display name: {0.name}",
-              "Current profile image: {0.profile_image_url}",
-              "Current banner image: {0.profile_banner_url}",
-              "Tweets: {0.statuses_count}",
-              "Followers: {0.followers_count}",
-              "Following: {0.friends_count}"]
+                "Display name: {0.name}",
+                "ID: {0.id_str}",
+                "Description: {0.description}",
+                "Current profile image: {0.profile_image_url}",
+                "Current banner image: {0.profile_banner_url}",
+                "Tweets: {0.statuses_count}",
+                "Followers: {0.followers_count}",
+                "Following: {0.friends_count}",
+                "Protected: {0.protected}"]
 
 wikia_listener = None
-id = ['2734031000', '3299062544', '4423137133', '347849994', '1346933186', '739117766100189184']
+id = ['2734031000', '357915189', '4423137133', '347849994', '1346933186', '739117766100189184']
 
 class LLWikiaListener(tweepy.StreamListener):
 
@@ -32,7 +35,10 @@ class LLWikiaListener(tweepy.StreamListener):
             if not str(status.user.id) in self.id:
                 return
             user = html.unescape(status.user.name)
-            text = html.unescape(status.text)
+            if is_retweet(status):
+                text = html.unescape('RT {0.user.name}: {0.text}'.format(status.retweeted_status))
+            else:
+                text = html.unescape(status.text)
             send = "Latest tweet by {0}: {1}\n".format(user, text)
             try:
                 for media in status.extended_entities['media']:
@@ -80,6 +86,7 @@ def init_stream():
     # ll_extra 739117766100189184
     # lovelive_staff 347849994
     # lovelive_sif 1346933186
+    # ischyrb 357915189
 
     wikia_listener = LLWikiaListener(id)
     wikia_poster = tweepy.Stream(auth=auth, listener=wikia_listener)
