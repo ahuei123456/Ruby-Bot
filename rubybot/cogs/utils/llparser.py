@@ -29,6 +29,24 @@ eng_jp = dict()
 cards_url = 'http://schoolido.lu/api/cards/'
 cache_url = 'http://schoolido.lu/api/cacheddata/'
 event_url = 'http://schoolido.lu/api/events/'
+songs_url = 'http://schoolido.lu/api/songs/'
+
+info_song = ["Title: {name}",
+                "Title (Romaji): {romaji_name}",
+                "Title (English): {translated_name}",
+                "Attribute: {attribute}",
+                "BPM: {BPM}",
+                "Time (seconds): {time}",
+                "Difficulty (Easy): {easy_difficulty}",
+                "Notes (Easy): {easy_notes}",
+                "Difficulty (Normal): {normal_difficulty}",
+                "Notes (Normal): {normal_notes}",
+                "Difficulty (Hard): {hard_difficulty}",
+                "Notes (Hard): {hard_notes}",
+                "Difficulty (Expert): {expert_difficulty}",
+                "Difficulty (EXR): {expert_random_difficulty}",
+                "Notes (Expert): {expert_notes}",
+                "Image: {image}"]
 
 def wikia_crawl():
     for sites in wikia_pages:
@@ -118,6 +136,32 @@ def current_event_en():
 def card(num: int):
     card = requests.get(cards_url + str(num) + '/')
     return card.json()
+
+
+def song(title: str):
+    params = {'search':title}
+    song = requests.get(songs_url, params=params).json()
+    return song['results'][0]
+
+
+def encode_card(card_json):
+    pass
+
+
+def encode_event(event_json):
+    pass
+
+
+def encode_song(song):
+    info = ''
+
+    for item in info_song:
+        try:
+            info += item.format(**song) + '\n'
+        except AttributeError:
+            pass
+
+    return info
 
 wikia_crawl()
 #current_event_en()

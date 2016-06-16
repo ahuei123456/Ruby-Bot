@@ -4,7 +4,7 @@ from cogs.utils import checks
 from cogs import streams
 import re
 
-information = "Ruby Bot, your one-stop solution for music queueing! (Now updated with commands.ext)\nLyrical display updated! Use lyrics <title> to display the lyrics of any LL song!.\nThank you for using Ruby Bot!"
+information = "Ruby Bot, your one-stop solution for music queueing! (Now updated with commands.ext)\nCreated with 100% stolen code from Chezz and link2110.\nThank you for using Ruby Bot!"
 bot = commands.Bot(command_prefix=commands.when_mentioned_or('~'), description=information)
 
 initial_extensions = ['cogs.administrative', 'cogs.music', 'cogs.info', 'cogs.memes']

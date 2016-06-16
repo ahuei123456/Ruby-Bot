@@ -1,6 +1,7 @@
 import tweepy
 import time
 import html
+import codecs
 import bs4
 import requests
 
@@ -200,7 +201,7 @@ def make_url(username):
 def archive(userid, filename='saved.txt'):
     with open(filename, 'a') as save:
         for status in tweepy.Cursor(api_twitter.user_timeline, id=userid).items(200):
-            save.write(encode_tweet(status))
+            save.write((html.unescape(encode_tweet(status))))
 
 
 init_twitter()

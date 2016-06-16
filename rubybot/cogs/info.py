@@ -1,8 +1,10 @@
 import asyncio
+import codecs
 
 from discord.ext import commands
 from cogs.utils import llparser
 from cogs.utils import twitconn
+
 
 
 class Info:
@@ -80,25 +82,27 @@ class Info:
     def code(self, msg):
         return self.code_block + msg + self.code_block
 
-    @commands.command(name='twit')
-    async def twit(self, *, id: str):
+    @commands.group(name='twit', pass_context=True, invoke_without_command=True)
+    async def twit(self, ctx, *, id: str):
         """
         Retrieves basic information about a twitter user.
         :param id: Username of the user to retrieve info from
         """
-        try:
-            info = twitconn.get_user_info(id)
-            await self.bot.say(info)
-        except Exception as e:
-            await self.bot.say(e)
+        if ctx.invoked_subcommand is None:
+            try:
+                info = twitconn.get_user_info(id)
+                await self.bot.say(info)
+            except Exception as e:
+                await self.bot.say(e)
 
-
-    @commands.command(name='twit_id', hidden=True)
-    async def print_id(self, twitter_id: str):
-        try:
-            await self.bot.say(twitconn.get_user_id(twitter_id))
-        except Exception as e:
-            await self.bot.say(e)
+    @twit.command(hidden=True)
+    async def archive(self, id, filename):
+        """
+        Locally archives the last 200 tweets from a twitter user.
+        :param id: Username of the user to archive tweets from
+        :param filename: Filename to save archive to
+        """
+        twitconn.archive(id, filename)
 
     @commands.group()
     async def sif(self):
@@ -107,6 +111,11 @@ class Info:
     @sif.command()
     async def card(self, num: int):
         pass
+
+    @sif.command()
+    async def song(self, *, title: str):
+        result = llparser.song(title.strip())
+        await self.bot.say(llparser.encode_song(result))
 
 
 
