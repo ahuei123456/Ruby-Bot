@@ -153,6 +153,15 @@ class Administrative:
     def code(self, msg):
         return self.code_block + msg + self.code_block
 
+    def find_member(self, mid):
+        mid = str(mid)
+
+        for member in self.bot.get_all_members():
+            if member.id == mid:
+                return member
+
+        return None
+
 
 def setup(bot):
     bot.add_cog(Administrative(bot))

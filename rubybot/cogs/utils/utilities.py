@@ -166,4 +166,5 @@ def load_credentials():
     with open(path) as f:
         return json.load(f)
 
+
 music = MusicLinker('files\music.db')

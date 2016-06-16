@@ -17,8 +17,12 @@ user_encode = ["Username: {0.screen_name}",
                 "Following: {0.friends_count}",
                 "Protected: {0.protected}"]
 
+user_url = "URL: {}"
+
 wikia_listener = None
 id = ['2734031000', '357915189', '4423137133', '347849994', '1346933186', '739117766100189184']
+
+twit_url = r'https://twitter.com/'
 
 class LLWikiaListener(tweepy.StreamListener):
 
@@ -176,6 +180,8 @@ def encode_user(user):
             encoded += string.format(user) + '\n'
         except AttributeError:
             pass
+
+    encoded += user_url.format(make_url(user.screen_name))
     return encoded.strip()
 
 
@@ -187,5 +193,16 @@ def is_retweet(status):
     return hasattr(status, 'retweeted_status')
 
 
+def make_url(username):
+    return twit_url + username
+
+
+def archive(userid, filename='saved.txt'):
+    with open(filename, 'a') as save:
+        for status in tweepy.Cursor(api_twitter.user_timeline, id=userid).items(200):
+            save.write(encode_tweet(status))
+
+
 init_twitter()
 init_stream()
+
