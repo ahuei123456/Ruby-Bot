@@ -114,9 +114,36 @@ class Info:
 
     @sif.command()
     async def song(self, *, title: str):
-        result = llparser.song(title.strip())
+        result = llparser.get_song(title.strip())
         await self.bot.say(llparser.encode_song(result))
 
+    @sif.group()
+    async def event(self):
+        pass
+
+    @event.command(name='jp')
+    async def event_jp(self, *, title: str):
+        event = llparser.get_event(title.strip())
+        await self.bot.say(llparser.encode_event_jp(event))
+
+    @event.command(name='en')
+    async def event_en(self, *, title: str):
+        event = llparser.get_event(title.strip())
+        await self.bot.say(llparser.encode_event_en(event))
+
+    @sif.group()
+    async def current(self):
+        pass
+
+    @current.command(name='jp')
+    async def current_jp(self):
+        event = llparser.current_event_jp()
+        await self.bot.say(llparser.encode_current_jp(event))
+
+    @current.command(name='en')
+    async def current_en(self):
+        event = llparser.current_event_en()
+        await self.bot.say(llparser.encode_current_en(event))
 
 
 def setup(bot):

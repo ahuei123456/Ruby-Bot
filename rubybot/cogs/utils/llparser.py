@@ -1,7 +1,14 @@
 import requests
 import bs4
 import re
+import datetime
+from datetime import timezone
+from datetime import timedelta
 import json
+
+day = ('Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun')
+month = ('Dummy', 'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec')
+time_format = "%a %b %d %Y %H:%M:%S %Z"
 
 swaps = {'Blueberry Train': 'Blueberry♥Train', 'Gay Garden': 'Garasu no Hanazono',
          'Susume Tomorrow': 'Susume→Tomorrow',
@@ -31,22 +38,67 @@ cache_url = 'http://schoolido.lu/api/cacheddata/'
 event_url = 'http://schoolido.lu/api/events/'
 songs_url = 'http://schoolido.lu/api/songs/'
 
-info_song = ["Title: {name}",
-                "Title (Romaji): {romaji_name}",
-                "Title (English): {translated_name}",
-                "Attribute: {attribute}",
-                "BPM: {BPM}",
-                "Time (seconds): {time}",
-                "Difficulty (Easy): {easy_difficulty}",
-                "Notes (Easy): {easy_notes}",
-                "Difficulty (Normal): {normal_difficulty}",
-                "Notes (Normal): {normal_notes}",
-                "Difficulty (Hard): {hard_difficulty}",
-                "Notes (Hard): {hard_notes}",
-                "Difficulty (Expert): {expert_difficulty}",
-                "Difficulty (EXR): {expert_random_difficulty}",
-                "Notes (Expert): {expert_notes}",
-                "Image: {image}"]
+info_song = [
+    "**Title**: {name}",
+    "**Title (Romaji)**: {romaji_name}",
+    "**Title (English)**: {translated_name}",
+    "**Attribute**: {attribute}",
+    "**BPM**: {BPM}",
+    "**Time (seconds)**: {time}",
+    "**Difficulty (Easy)**: {easy_difficulty}",
+    "**Notes (Easy)**: {easy_notes}",
+    "**Difficulty (Normal)**: {normal_difficulty}",
+    "**Notes (Normal)**: {normal_notes}",
+    "**Difficulty (Hard)**: {hard_difficulty}",
+    "**Notes (Hard)**: {hard_notes}",
+    "**Difficulty (Expert)**: {expert_difficulty}",
+    "**Difficulty (EXR)**: {expert_random_difficulty}",
+    "**Notes (Expert)**: {expert_notes}",
+    "**Image**: {image}"
+]
+
+info_event_jp = [
+    "**Title**: {japanese_name}",
+    "**Title (Romaji)**: {romaji_name}",
+    "**Start**: {jp_start}",
+    "**End**: {jp_end}",
+    "**Current event**: {japan_current}",
+    "**T1 points**: {japanese_t1_points}",
+    "**T1 rank**: {japanese_t1_rank}",
+    "**T2 points**: {japanese_t2_points}",
+    "**T2 rank**: {japanese_t2_rank}",
+    "**Note**: {note}",
+    "**Banner**: {image}"
+]
+
+info_event_en = [
+    "**Title (English)**: {english_name}",
+    "**Start**: {en_start}",
+    "**End**: {en_end}",
+    "**Current event**: {world_current}",
+    "**T1 points**: {english_t1_points}",
+    "**T1 rank**: {english_t1_rank}",
+    "**T2 points**: {english_t2_points}",
+    "**T2 rank**: {english_t2_rank}",
+    "**Note**: {note}",
+    "**Banner**: {english_image}"
+]
+
+info_current_jp =[
+    "**Event JP**: {japanese_name}",
+    "**START**: {jp_start}",
+    "**END**: {jp_end}",
+    "{jp_time}",
+    "{image}"
+]
+
+info_current_en =[
+    "**Event EN**: {english_name}",
+    "**START**: {en_start}",
+    "**END**: {en_end}",
+    "{en_time}",
+    "{english_image}"
+]
 
 def wikia_crawl():
     for sites in wikia_pages:
@@ -126,42 +178,144 @@ def sub_title(title):
 
 def current_event_en():
     cache = requests.get(cache_url).json()
-    params = {'search': cache['current_event_en']['japanese_name']}
-    event = requests.get(event_url, params).json()
-    result = event['results'][0]
-    for item in list(result.keys()):
-        print(item)
+    event = get_event_en(cache['current_event_en']['japanese_name'])
+    return event
 
 
-def card(num: int):
+def current_event_jp():
+    cache = requests.get(cache_url).json()
+    event = get_event_jp(cache['current_event_jp']['japanese_name'])
+    return event
+
+
+def get_card(num: int):
     card = requests.get(cards_url + str(num) + '/')
     return card.json()
 
 
-def song(title: str):
-    params = {'search':title}
+def get_song(title: str):
+    params = {'search': title}
     song = requests.get(songs_url, params=params).json()
     return song['results'][0]
 
 
-def encode_card(card_json):
+def get_event_jp(title: str):
+    params = {'search': title}
+    events = requests.get(event_url, params=params).json()
+    event = events['results'][0]
+
+    jp_start = convert_time(event['beginning'])
+    jp_end = convert_time(event['end'])
+
+    event['jp_start'] = encode_time(jp_start)
+    event['jp_end'] = encode_time(jp_end)
+    event['jp_time'] = event_remaining(jp_start, jp_end)
+    return event
+
+
+def get_event_en(title: str):
+    params = {'search': title}
+    events = requests.get(event_url, params=params).json()
+    event = events['results'][0]
+
+    en_start = convert_time(event['english_beginning'])
+    en_end = convert_time(event['english_end'])
+
+    event['en_start'] = encode_time(en_start)
+    event['en_end'] = encode_time(en_end)
+    event['en_time'] = event_remaining(en_start, en_end)
+    return event
+
+
+def encode_card(card):
     pass
 
 
-def encode_event(event_json):
-    pass
+def encode_event_en(event):
+    return encode_info(info_event_en, event)
+
+
+def encode_event_jp(event):
+    return encode_info(info_event_jp, event)
+
+
+def encode_current_en(event):
+    return encode_info(info_current_en, event)
+
+
+def encode_current_jp(event):
+    return encode_info(info_current_jp, event)
 
 
 def encode_song(song):
+    return encode_info(info_song, song)
+
+
+def encode_info(info_text, data):
     info = ''
 
-    for item in info_song:
+    for label in info_text:
         try:
-            info += item.format(**song) + '\n'
+            line = label.format(**data) + '\n'
+            info += line
         except AttributeError:
             pass
 
     return info
+
+
+def convert_time(time):
+    # 2014-11-05T09:00:00Z
+    # yyyy-mm-ddThh:mm:ssZ
+    # 2013-06-12T16:00:00+09:00
+    if time is None:
+        return None
+    if len(time) < 10:
+        return None
+
+    year = int(time[:4])
+    month = int(time[5:7])
+    date = int(time[8:10])
+
+    hour = int(time[11:13])
+    minute = int(time[14:16])
+    second = int(time[17:19])
+
+    if len(time) > 21:
+        tz = timezone(timedelta(hours=9))
+    else:
+        tz = timezone.utc
+
+    dt = datetime.datetime(year, month, date, hour, minute, second, 0, tz)
+    return dt
+
+
+def encode_time(dt):
+    if dt is None:
+        return None
+    dt_str = dt.strftime(time_format)
+    return dt_str
+
+
+def event_remaining(dt_start, dt_end):
+    now = datetime.datetime.now(timezone.utc)
+
+    diff_end = dt_end - now
+    diff_start = now - dt_start
+    if diff_start.total_seconds() < 0:
+        return "Event has not started yet!"
+    elif diff_end.total_seconds() < 0:
+        return "Event has ended!"
+    else:
+        seconds = diff_end.seconds
+
+        hours = seconds // 3600
+        seconds -= hours * 3600
+
+        minutes = seconds // 60
+        seconds -= minutes * 60
+
+        return "Event ends in {} days, {} hours, {} minutes and {} seconds.".format(diff_end.days, hours, minutes, seconds)
 
 wikia_crawl()
 #current_event_en()

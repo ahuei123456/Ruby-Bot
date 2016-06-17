@@ -287,7 +287,8 @@ class Music:
             await self.play_song(ctx, link)
 
     async def play_song(self, ctx, link):
-        summoned_channel = self.bot.is_voice_connected(ctx.message.server)
+        #summoned_channel = self.bot.is_voice_connected(ctx.message.server)
+        summoned_channel = None
         if not summoned_channel:
             msg = await self.bot.say(self.song_play + ' ' + link)
             await asyncio.sleep(self.delay_del_play)
