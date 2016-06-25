@@ -1,6 +1,7 @@
 import random
 import os
 import json
+import discord
 from cogs.utils import dbconn
 from cogs.utils.dbconn import MusicLinker
 
@@ -15,23 +16,23 @@ index_rn = args_full.index('-rn')
 def title(data):
     if len(data) < 1:
         data.append('')
-    return music.title(data[0])
+    return music.title(data)
 
 
 def code(data):
-    return music.code(data[0])
+    return music.code(data)
 
 
 def album(data):
-    return music.album(data[0])
+    return music.album(data)
 
 
 def albums(data):
-    return music.albums(data[0])
+    return music.albums(data)
 
 
 def anime(data, type=''):
-    return music.anime(data[0], type)
+    return music.anime(data, type)
 
 
 def adv(data, args=args_full):
@@ -43,7 +44,7 @@ def adv(data, args=args_full):
     flag_repeat = 0
     for x in range(0, len(data)):
         if x == 0 and data[x] not in args:
-            fdata[dbconn.columns[2]] = data[0]
+            fdata[dbconn.columns_music[2]] = data[0]
 
         elif data[x] in args:
             if args.index(data[x]) >= index_or:
@@ -94,6 +95,32 @@ def randomize(rlist, repeat = 0, count = 1):
                 break
 
     return play
+
+
+def get_playlist_songs(name, owner):
+    code_str = get_playlist(name, owner)[0]
+    code_list = code_str.split()
+
+    links = list()
+    for code_song in code_list:
+        links.append(code(code_song)[0])
+
+    return links
+
+
+def get_playlist(name, owner):
+    playlist = music.playlist_get(name, str(owner.id))
+    if playlist is None:
+        raise ValueError('No playlist found!')
+    return playlist
+
+
+def add_song_to_playlist(name, owner, code):
+    music.playlist_add(name, owner.id, code)
+
+
+def create_playlist(name, owner):
+    music.playlist_create(name, owner.id)
 
 
 def fix_input(raw, special=args_full):
@@ -165,6 +192,13 @@ def load_credentials():
     path = os.path.join(os.getcwd(), 'files', 'credentials.json')
     with open(path) as f:
         return json.load(f)
+
+
+def is_dm(msg):
+    server = msg.server
+    if not server:
+        return True
+    return False
 
 
 music = MusicLinker('files\music.db')

@@ -92,34 +92,14 @@ class Music:
 
         self.id_admin = '144803988963983360'
 
-    @commands.command(pass_context=True, no_pm=True, hidden=True)
-    async def title(self, ctx, *, title: str):
-        """Deprecated. Use db title <title> instead"""
-        await self.bot.say(self.code("Deprecated. Use db title <title> instead."))
-
-    @commands.command(pass_context=True, no_pm=True, hidden=True)
-    async def code(self, ctx, *, code: str):
-        """Deprecated. Use db code <code> instead"""
-        await self.bot.say(self.code("Deprecated. Use db code <code> instead."))
-
-    @commands.command(pass_context=True, no_pm=True, hidden=True)
-    async def album(self, ctx, *, album: str):
-        """Deprecated. Use db album <album> instead"""
-        await self.bot.say(self.code("Deprecated. Use db album <album> instead."))
-
-    @commands.command(pass_context=True, no_pm=True, hidden=True)
-    async def adv(self, ctx, *, adv: str):
-        """Deprecated. Use db search <search args> instead"""
-        await self.bot.say(self.code("Deprecated. Use db search <search args> instead."))
-
-    @commands.group(name='db', pass_context=True, no_pm=True)
+    @commands.group(name='db', pass_context=True)
     async def db(self, ctx):
         """
         Lets you queue songs from within Ruby Bot's database.
         """
         pass
 
-    @db.command(name='title', pass_context=True, no_pm=True)
+    @db.command(name='title', pass_context=True)
     async def title(self, ctx, *, title: str):
         """Searches the music database by title for a song.
         Queues it if a single matching song is found.
@@ -128,13 +108,16 @@ class Music:
         """
 
         output = utilities.fix_input(title)
-        data = utilities.title(output)
+        data = utilities.title(output[0])
         if len(data) == 0:
             await self.error_results_not_found(title)
+        elif len(data) > 1:
+            await self.print_table(ctx, self.error_excess_results.format(title), self.get_song_info(data),
+                                   self.tbl_song_info, self.tbl_limit)
         else:
             await self.process(ctx, data)
 
-    @db.command(name='album', pass_context=True, no_pm=True)
+    @db.command(name='album', pass_context=True)
     async def album(self, ctx, *, album: str):
         """Searches the music database by title for an album.
         Queues all of it if a single matching album is found.
@@ -142,16 +125,10 @@ class Music:
         :param album: Song album to search for
         """
         output = utilities.fix_input(album)
-        albums = utilities.albums(output)
-        if len(albums) > 1:
-            await self.print_table(ctx, self.error_excess_results.format(output), albums, self.tbl_album_list)
-        elif len(albums) == 0:
-            await self.error_results_not_found(album)
-        else:
-            data = utilities.album(output)
-            await self.process(ctx, data, len(data))
+        albums = utilities.albums(output[0])
+        await self.process_album(ctx, output, album, albums)
 
-    @db.group(name='anime', pass_context=True, no_pm=True)
+    @db.group(name='anime', pass_context=True)
     async def anime(self, ctx, *, anime: str):
         """
         Searches the music database for songs of an anime.
@@ -166,10 +143,10 @@ class Music:
             anime = anime.replace('ending', '', 1).strip()
             category = 'ending'
         output = utilities.fix_input(anime)
-        data = utilities.anime(output, category)
+        data = utilities.anime(output[0], category)
         await self.process(ctx, data, len(data))
 
-    @anime.command(name='opening', pass_context=True, no_pm=True)
+    @anime.command(name='opening', pass_context=True)
     async def op(self, ctx, *, anime: str):
         """
         Searches the music database for opening songs of an anime.
@@ -178,7 +155,7 @@ class Music:
         """
 
 
-    @anime.command(name='ending', pass_context=True, no_pm=True)
+    @anime.command(name='ending', pass_context=True)
     async def ed(self, ctx, *, anime: str):
         """
         Searches the music database for ending songs of an anime.
@@ -186,7 +163,7 @@ class Music:
         :param anime: Title of anime
         """
 
-    @db.command(name='code', pass_context=True, no_pm=True)
+    @db.command(name='code', pass_context=True)
     async def _code(self, ctx, *, code: str):
         """
         Searches the music database by code for a song.
@@ -195,19 +172,19 @@ class Music:
         :param code: Song code to search for
         """
         output = utilities.fix_input(code)
-        data = utilities.code(output)
+        data = utilities.code(output[0])
         if len(data) == 0:
             await self.error_results_not_found(code)
         else:
             await self.process(ctx, data)
 
-    @db.command(name='search', pass_context=True, no_pm=True)
+    @db.command(name='search', pass_context=True)
     async def search(self, ctx, *, search: str):
         output = utilities.fix_input(search)
         data = utilities.adv(output)
         await self.process(ctx, data, len(data))
 
-    @db.command(name='list', pass_context=True, no_pm=True)
+    @db.command(name='list', pass_context=True, no_pm=True, hidden=True)
     async def list(self, ctx, *, search: str=''):
         """
         Searches the music database using formatted arguments and PMs the info of all the songs found.
@@ -231,12 +208,22 @@ class Music:
 
     async def process(self, ctx, data, max_length=1):
         if len(data) <= max_length:
-            await self.play_list(ctx, self.get_links(data))
-            await asyncio.sleep(self.delay_del_command)
-            await self.bot.delete_message(ctx.message)
+            await self.play_list(ctx, data)
+            if not utilities.is_dm(ctx.message):
+                await asyncio.sleep(self.delay_del_command)
+                await self.bot.delete_message(ctx.message)
         else:
             await self.print_table(ctx, self.error_excess_results, self.get_song_info(data),
                                    self.tbl_song_info, self.tbl_limit)
+
+    async def process_album(self, ctx, output, album, albums):
+        if len(albums) > 1:
+            await self.print_table(ctx, self.error_excess_results.format(output), albums, self.tbl_album_list)
+        elif len(albums) == 0:
+            await self.error_results_not_found(album)
+        else:
+            data = utilities.album(output[0])
+            await self.process(ctx, data, len(data))
 
     async def error_long_suggestion(self):
         await self.bot.say(self.error_suggestion_too_long)
@@ -244,7 +231,9 @@ class Music:
     async def error_results_not_found(self, search_term: str):
         await self.bot.say(self.error_no_results.format(search_term))
 
-    async def print_table(self, ctx, msg, data, titles, limit=tbl_limit, pm=False):
+    async def print_table(self, ctx, msg, data, titles, limit=tbl_limit, pm=None):
+        if pm is None:
+            pm = utilities.is_dm(ctx.message)
         del_later = list()
         if not pm:
             del_later.append(ctx.message)
@@ -283,16 +272,22 @@ class Music:
             await self.bot.delete_message(msg)
 
     async def play_list(self, ctx, link_list):
-        for link in link_list:
-            await self.play_song(ctx, link)
+        if not utilities.is_dm(ctx.message):
+            for link in link_list:
+                await self.play_song(ctx, link)
+        else:
+            await self.print_table(ctx, self.search_results, self.get_song_info(link_list), self.tbl_song_info, len(link_list))
 
-    async def play_song(self, ctx, link):
+
+    async def play_song(self, ctx, song):
         #summoned_channel = self.bot.is_voice_connected(ctx.message.server)
         summoned_channel = None
+        link = self.get_link(song)
         if not summoned_channel:
             msg = await self.bot.say(self.song_play + ' ' + link)
             await asyncio.sleep(self.delay_del_play)
             await self.bot.delete_message(msg)
+
         else:
             await self.queue_music(ctx, link)
 
@@ -303,19 +298,22 @@ class Music:
         links = list()
 
         for row in full_list:
-            links.append(row[dbconn.columns.index('link')])
+            links.append(self.get_link(row))
 
         return links
+
+    def get_link(self, data):
+        return data[dbconn.columns_music.index('link')]
 
     def get_song_info(self, full_list):
         info = list()
 
         for row in full_list:
             _info = list()
-            _info.append(row[dbconn.columns.index('code')])
-            _info.append(row[dbconn.columns.index('title')])
-            _info.append(row[dbconn.columns.index('artist')])
-            _info.append(row[dbconn.columns.index('album')])
+            _info.append(row[dbconn.columns_music.index('code')])
+            _info.append(row[dbconn.columns_music.index('title')])
+            _info.append(row[dbconn.columns_music.index('artist')])
+            _info.append(row[dbconn.columns_music.index('album')])
 
             info.append(_info)
 
@@ -334,6 +332,52 @@ class Music:
         return msg.author.id == self.id_admin
 
     ######### PLAYLIST #########
+    @commands.group(pass_context=True, invoke_without_command=True)
+    async def playlist(self, ctx, *, name: str):
+        """
+        Lets you save your song playlists.
+        If a subcommand is not called, then this will search the playlist database
+        and queue the playlist requested.
+        :param name: name of playlist
+        """
+        playlist = utilities.get_playlist_songs(name, ctx.message.author)
+        await self.play_list(ctx, playlist)
+
+    @playlist.error
+    async def playlist_error(self, error, ctx):
+        if isinstance(error, commands.MissingRequiredArgument):
+            await self.bot.say('You need to pass in a playlist name.')
+        else:
+            await self.bot.say(error)
+
+    @playlist.command(pass_context=True)
+    async def add(self, ctx, name, *, code):
+        """
+        Adds songs to a particular playlist.
+        Separate multiple song codes by spaces.
+        :param name: Name of playlist to add song(s) to.
+        :param code: Song code(s)
+        """
+        code = code.strip()
+        codes = code.split()
+        for raw in codes:
+            if len(raw) != 9:
+                await self.bot.say('Invalid code detected')
+                return
+
+        utilities.add_song_to_playlist(name, ctx.message.author, codes)
+        await self.bot.say('Song(s) {} successfully added to playlist "{}"!'.format(code, name))
+
+    @playlist.command(pass_context=True)
+    async def create(self, ctx, *, name):
+        """
+        Creates an empty personal playlist.
+        :param name: Name of the playlist.
+        """
+        utilities.create_playlist(name, ctx.message.author)
+        await self.bot.say('Successfully created playlist "{}"!'.format(name))
+
+
     ######### MUSICBOT #########
     def get_voice_state(self, server):
         state = self.voice_states.get(server.id)

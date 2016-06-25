@@ -8,7 +8,7 @@ information = "Ruby Bot, your one-stop solution for music queueing! (Now updated
 bot = commands.Bot(command_prefix=commands.when_mentioned_or('~'), description=information)
 
 initial_extensions = ['cogs.administrative', 'cogs.music', 'cogs.info', 'cogs.memes']
-posts = streams.Streams(bot)
+#osts = streams.Streams(bot)
 
 
 @bot.event
@@ -34,18 +34,18 @@ async def on_resumed():
     print('Resumed')
     await posts.reboot_stream()
 
-"""
+
 @bot.event
 async def on_message(message):
     ch = message.channel
     msg = message.content.lower()
     # If the string contains "aquors" and is NOT preceded by a letter and is NOT followed by a letter
     # (i.e. is not hidden inside a word), then we correct the person. The letter "s" is optional.
-    if checks.is_shig() and re.search(r"(?<![a-zA-Z])aqour(s?)(?![a-zA-Z])", msg) is not None:
-        await bot.send_message(ch, "***AQUORS***")
+    if re.search(r"(?<![a-zA-Z])aquor(s?)(?![a-zA-Z])", msg) is not None:
+        await bot.send_message(ch, "***AQOURS***")
 
     await bot.process_commands(message)
-"""
+
 
 
 if __name__ == "__main__":

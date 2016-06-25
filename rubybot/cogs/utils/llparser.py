@@ -177,14 +177,31 @@ def sub_title(title):
 ###### SIF ######
 
 def current_event_en():
-    cache = requests.get(cache_url).json()
-    event = get_event_en(cache['current_event_en']['japanese_name'])
+    # http://schoolido.lu/api/events/?ordering=-english_beginning&page_size=1
+    params = {'ordering': '-english_beginning', 'page_size': 1}
+    events = requests.get(event_url, params=params).json()
+    event = events['results'][0]
+
+    en_start = convert_time(event['english_beginning'])
+    en_end = convert_time(event['english_end'])
+
+    event['en_start'] = encode_time(en_start)
+    event['en_end'] = encode_time(en_end)
+    event['en_time'] = event_remaining(en_start, en_end)
     return event
 
 
 def current_event_jp():
-    cache = requests.get(cache_url).json()
-    event = get_event_jp(cache['current_event_jp']['japanese_name'])
+    params = {'ordering': '-beginning', 'page_size': 1}
+    events = requests.get(event_url, params=params).json()
+    event = events['results'][0]
+
+    jp_start = convert_time(event['beginning'])
+    jp_end = convert_time(event['end'])
+
+    event['jp_start'] = encode_time(jp_start)
+    event['jp_end'] = encode_time(jp_end)
+    event['jp_time'] = event_remaining(jp_start, jp_end)
     return event
 
 
