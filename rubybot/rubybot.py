@@ -4,11 +4,15 @@ from cogs.utils import checks
 from cogs import streams
 import re
 
+debug = False
 information = "Ruby Bot, your one-stop solution for music queueing! (Now updated with commands.ext)\nCreated with 100% stolen code from Chezz and link2110.\nThank you for using Ruby Bot!"
-bot = commands.Bot(command_prefix=commands.when_mentioned_or('~'), description=information)
+if debug:
+    bot = commands.Bot(command_prefix=commands.when_mentioned_or('#'), description=information)
+else:
+    bot = commands.Bot(command_prefix=commands.when_mentioned_or('~'), description=information)
 
 initial_extensions = ['cogs.administrative', 'cogs.music', 'cogs.info', 'cogs.memes']
-#osts = streams.Streams(bot)
+posts = streams.Streams(bot)
 
 
 @bot.event

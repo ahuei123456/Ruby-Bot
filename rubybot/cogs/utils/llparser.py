@@ -4,6 +4,7 @@ import re
 import datetime
 from datetime import timezone
 from datetime import timedelta
+from copy import deepcopy
 import json
 
 day = ('Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun')
@@ -99,6 +100,33 @@ info_current_en =[
     "{en_time}",
     "{english_image}"
 ]
+
+ss_anime_start = datetime.datetime(2016, 7, 2, 22, 30, 0, 0, timezone(timedelta(hours=9), name='JST'))
+ss_phrases = (
+    'We want to shine!',
+)
+
+ss_subs = (
+    ('FFFansubs', 'http://fffansubs.org/'),
+    ('動畫瘋 (TW)', 'http://ani.gamer.com.tw/index.php'),
+    ('LiTV (TW)', 'https://www.litv.tv/vod/comic'),
+    ('Viu.com (HK)', 'https://www.viu.com'),
+    ('ANIPLUS (KR)', 'http://www.aniplustv.com/ip.asp#/tv/program_view.asp?gCode=TV&sCode=010&contentSerial=1755'),
+    ('DEX (TH)', 'http://www.dexchannel.com'),
+    ('MADMAN (Oceania)', 'http://www.animelab.com'),
+    ('Anime Limited (France)', 'http://www.wakanim.tv'),
+    ('Anime Limited (UK)', 'http://www.crunchyroll.com'),
+    ('AV Visionen (Germany)', 'http://www.anime-on-demand.de'),
+    ('Funimation (US/Canada)', 'http://www.funimation.com/videos/simulcasts_shows')
+)
+
+ss_raws = (
+    ('LINE Live', 'https://live.line.me/r/channels/91/upcoming/6886'),
+    ('Bandai Channel', 'http://live.b-ch.com/lovelive_anime'),
+    ('Animate Channel', 'http://www.animatechannel.com/live/lovelive_anime'),
+    ('Niconico Live (JP)', 'http://live.nicovideo.jp/gate/lv267944319'),
+    ('AbemaTV (JP)', 'https://abema.tv/')
+)
 
 def wikia_crawl():
     for sites in wikia_pages:
@@ -333,6 +361,61 @@ def event_remaining(dt_start, dt_end):
         seconds -= minutes * 60
 
         return "Event ends in {} days, {} hours, {} minutes and {} seconds.".format(diff_end.days, hours, minutes, seconds)
+
+###### Sunshine ######
+
+
+def get_next_ep():
+    now = datetime.datetime.now(timezone.utc)
+    next_ep = deepcopy(ss_anime_start)
+    diff = next_ep - now
+    ep_num = 1
+
+    while diff.total_seconds() < 0:
+        ep_num += 1
+        next_ep = next_ep + timedelta(weeks=1)
+
+    msg = encode_next_ep(ep_num, diff, next_ep)
+    msg += '\n\n' + encode_raws() + '\n\n' + encode_subs()
+    return msg
+
+
+def encode_next_ep(ep_num, diff, airtime):
+    seconds = diff.seconds
+
+    hours = seconds // 3600
+    seconds -= hours * 3600
+
+    minutes = seconds // 60
+    seconds -= minutes * 60
+
+    msg = '**Love Live! Sunshine!! TV Anime**\n'
+    msg += '**Next Episode**: Episode {}\n'.format(ep_num)
+    msg += '**Airing in**: {} days, {} hours, {} minutes and {} seconds\n'.format(diff.days, hours, minutes, seconds)
+    msg += '**Airing on**: ' + airtime.strftime('%B %d, %Y %H:%M:%S %Z') +'\n'
+    msg += '**{}**'.format(ss_phrases[0])
+    return msg
+
+
+def encode_raws():
+    msg = '**Raw Sources**\n'
+
+    for item in ss_raws:
+        msg += '**' + item[0] + '**: <' + item[1] + '>\n'
+
+    msg = msg.strip()
+    return msg
+
+
+def encode_subs():
+    msg = '**Subtitled Sources**\n'
+
+    for item in ss_subs:
+        msg += '**' + item[0] + '**: <' + item[1] + '>\n'
+
+    msg = msg.strip()
+    return msg
+
 
 wikia_crawl()
 #current_event_en()

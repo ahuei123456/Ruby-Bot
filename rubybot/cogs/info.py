@@ -6,7 +6,6 @@ from cogs.utils import llparser
 from cogs.utils import twitconn
 
 
-
 class Info:
     max_char = 2000
     buffer = 5
@@ -144,6 +143,14 @@ class Info:
     async def current_en(self):
         event = llparser.current_event_en()
         await self.bot.say(llparser.encode_current_en(event))
+
+    @commands.command(name='llss')
+    async def llss(self):
+        """
+        Countdown to next LLSS episode!
+        """
+        msg = llparser.get_next_ep()
+        await self.bot.say(msg)
 
 
 def setup(bot):

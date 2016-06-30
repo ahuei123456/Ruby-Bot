@@ -51,7 +51,7 @@ class LLWikiaListener(tweepy.StreamListener):
             except AttributeError:
                 pass
 
-            self.statuses.append(send)
+            self.statuses.append(send.strip())
         except Exception as e:
             print(e)
 
