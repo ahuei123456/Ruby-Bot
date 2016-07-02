@@ -115,8 +115,8 @@ ss_subs = (
     ('DEX (TH)', 'http://www.dexchannel.com'),
     ('MADMAN (Oceania)', 'http://www.animelab.com'),
     ('Anime Limited (France)', 'http://www.wakanim.tv'),
-    ('Anime Limited (UK)', 'http://www.crunchyroll.com'),
-    ('AV Visionen (Germany)', 'http://www.anime-on-demand.de'),
+    ('Anime Limited (UK/Republic of Ireland/Isle of Man)', 'http://www.crunchyroll.com'),
+    ('AV Visionen (Germany/Austria/Switzerland/Luxembourg/Liechtenstein)', 'http://www.anime-on-demand.de'),
     ('Funimation (US/Canada)', 'http://www.funimation.com/videos/simulcasts_shows')
 )
 
@@ -389,10 +389,19 @@ def encode_next_ep(ep_num, diff, airtime):
     minutes = seconds // 60
     seconds -= minutes * 60
 
+    airing = False
+    if diff.days == 6 and hours == 23 and minutes > 30:
+        airing = True
     msg = '**Love Live! Sunshine!! TV Anime**\n'
-    msg += '**Next Episode**: Episode {}\n'.format(ep_num)
-    msg += '**Airing in**: {} days, {} hours, {} minutes and {} seconds\n'.format(diff.days, hours, minutes, seconds)
-    msg += '**Airing on**: ' + airtime.strftime('%B %d, %Y %H:%M:%S %Z') +'\n'
+    if airing:
+        msg += '**Current Episode: Episode {}\n'.format(ep_num - 1)
+        msg += '**Currently airing!**'
+    else:
+        msg += '**Next Episode**: Episode {}\n'.format(ep_num)
+        msg += '**Airing in**: {} days, {} hours, {} minutes and {} seconds\n'.format(diff.days, hours, minutes,
+                                                                                      seconds)
+        msg += '**Airing on**: ' + airtime.strftime('%B %d, %Y %H:%M:%S %Z') + '\n'
+
     msg += '**{}**'.format(ss_phrases[0])
     return msg
 
@@ -408,7 +417,7 @@ def encode_raws():
 
 
 def encode_subs():
-    msg = '**Subtitled Sources**\n'
+    msg = '**Subtitled Sources** (1 hr delay after raws)\n'
 
     for item in ss_subs:
         msg += '**' + item[0] + '**: <' + item[1] + '>\n'

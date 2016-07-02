@@ -205,5 +205,5 @@ def archive(userid, filename='saved.txt'):
 
 
 init_twitter()
-init_stream()
+#init_stream()
 
