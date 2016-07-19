@@ -11,9 +11,12 @@ class Info:
     buffer = 5
     code_block = '```'
     loop = None
+    spoil = list()
 
     def __init__(self, bot):
         self.bot = bot
+
+
 
     @commands.group(name='lyrics', pass_context=True, invoke_without_command=True)
     async def lyrics(self, ctx, *, title:str):
@@ -144,13 +147,25 @@ class Info:
         event = llparser.current_event_en()
         await self.bot.say(llparser.encode_current_en(event))
 
-    @commands.command(name='llss')
+    @commands.group(name='llss')
     async def llss(self):
         """
-        Countdown to next LLSS episode!
+        LL! SS!! commands
         """
         msg = llparser.get_next_ep()
         await self.bot.say(msg)
+
+    @llss.command(pass_context=True)
+    async def spoil(self, ctx):
+        pass
+
+    @commands.command(name='archive', hidden=True)
+    async def archive(self, *, hashtag):
+        await self.bot.say('Archiving...')
+        print('archiving')
+        twitconn.save_hashtag('#' + hashtag)
+        await self.bot.say('Done!')
+        print('done')
 
 
 def setup(bot):

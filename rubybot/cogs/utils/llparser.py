@@ -103,7 +103,7 @@ info_current_en =[
 
 ss_anime_start = datetime.datetime(2016, 7, 2, 22, 30, 0, 0, timezone(timedelta(hours=9), name='JST'))
 ss_phrases = (
-    'We want to shine!',
+    '輝きたい！', '転校生をつかまえろ！', 'ファーストステップ', 'ふたりのキモチ'
 )
 
 ss_subs = (
@@ -113,10 +113,10 @@ ss_subs = (
     ('Viu.com (HK)', 'https://www.viu.com'),
     ('ANIPLUS (KR)', 'http://www.aniplustv.com/ip.asp#/tv/program_view.asp?gCode=TV&sCode=010&contentSerial=1755'),
     ('DEX (TH)', 'http://www.dexchannel.com'),
-    ('MADMAN (Oceania)', 'http://www.animelab.com'),
+    ('MADMAN (Oceania)', 'http://www.animelab.com', '1h 30m'),
     ('Anime Limited (France)', 'http://www.wakanim.tv'),
-    ('Anime Limited (UK/Republic of Ireland/Isle of Man)', 'http://www.crunchyroll.com'),
-    ('AV Visionen (Germany/Austria/Switzerland/Luxembourg/Liechtenstein)', 'http://www.anime-on-demand.de'),
+    ('Anime Limited (UK/Republic of Ireland/Isle of Man)', 'http://www.crunchyroll.com', '1h'),
+    ('AV Visionen (Germany/Austria/Switzerland/Luxembourg/Liechtenstein)', 'http://www.anime-on-demand.de', '2d 2h 30m'),
     ('Funimation (US/Canada)', 'http://www.funimation.com/videos/simulcasts_shows')
 )
 
@@ -374,6 +374,7 @@ def get_next_ep():
     while diff.total_seconds() < 0:
         ep_num += 1
         next_ep = next_ep + timedelta(weeks=1)
+        diff = next_ep - now
 
     msg = encode_next_ep(ep_num, diff, next_ep)
     msg += '\n\n' + encode_raws() + '\n\n' + encode_subs()
@@ -401,8 +402,10 @@ def encode_next_ep(ep_num, diff, airtime):
         msg += '**Airing in**: {} days, {} hours, {} minutes and {} seconds\n'.format(diff.days, hours, minutes,
                                                                                       seconds)
         msg += '**Airing on**: ' + airtime.strftime('%B %d, %Y %H:%M:%S %Z') + '\n'
-
-    msg += '**{}**'.format(ss_phrases[0])
+    try:
+        msg += '**{}**'.format(ss_phrases[ep_num - 1])
+    except IndexError:
+        msg = msg.strip()
     return msg
 
 
@@ -417,13 +420,19 @@ def encode_raws():
 
 
 def encode_subs():
-    msg = '**Subtitled Sources** (1 hr delay after raws)\n'
+    msg = '**Subtitled Sources**\n'
 
     for item in ss_subs:
-        msg += '**' + item[0] + '**: <' + item[1] + '>\n'
+        msg += '**' + item[0] + '**: <' + item[1] + '>'
+        if len(item) == 3:
+            msg += ' ' + item[2] + ' Delay\n'
+        else:
+            msg += '\n'
 
     msg = msg.strip()
     return msg
+
+
 
 
 wikia_crawl()

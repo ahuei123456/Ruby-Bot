@@ -1,6 +1,8 @@
 import tweepy
 import time
 import html
+import urllib.request
+import os
 import codecs
 import bs4
 import requests
@@ -21,7 +23,7 @@ user_encode = ["Username: {0.screen_name}",
 user_url = "URL: {}"
 
 wikia_listener = None
-id = ['2734031000', '357915189', '4423137133', '347849994', '1346933186', '739117766100189184']
+#id = ['2734031000', '357915189', '4423137133', '347849994', '1346933186', '739117766100189184']
 
 twit_url = r'https://twitter.com/'
 
@@ -35,6 +37,17 @@ class LLWikiaListener(tweepy.StreamListener):
 
     def on_status(self, status):
         try:
+            text = html.unescape(status.text)
+            
+            if text.find('#梨子ちゃんクソコラグランプリ') != -1:
+                try:
+                    for media in status.extended_entities['media']:
+                        print(media['media_url'])
+                        fname = media['media_url'].split('/')
+                        urllib.request.urlretrieve(media['media_url'], os.path.join(os.getcwd(), 'files', 'riko_meme', fname[len(fname) - 1]))
+                except AttributeError as e:
+                    print(e)
+            
             if is_reply(status):
                 return
             if not str(status.user.id) in self.id:
@@ -51,7 +64,8 @@ class LLWikiaListener(tweepy.StreamListener):
             except AttributeError:
                 pass
 
-            self.statuses.append(send.strip())
+            fstatus = (str(status.user.id), send.strip())
+            self.statuses.append(fstatus)
         except Exception as e:
             print(e)
 
@@ -65,7 +79,6 @@ class LLWikiaListener(tweepy.StreamListener):
         statuses = self.statuses[:]
         self.statuses.clear()
         return statuses
-
 
 def init_twitter():
     global api_twitter
@@ -82,7 +95,7 @@ def init_twitter():
     api_twitter = tweepy.API(auth)
 
 
-def init_stream():
+def init_stream(id):
     global wikia_listener
     global wikia_poster
     # ll_wikia 2734031000
@@ -95,22 +108,23 @@ def init_stream():
 
     wikia_listener = LLWikiaListener(id)
     wikia_poster = tweepy.Stream(auth=auth, listener=wikia_listener)
-    wikia_poster.filter(follow=id, async=True)
+    wikia_poster.filter(follow=id, track=['#梨子ちゃんクソコラグランプリ'], async=True)
 
 
 def kill_stream():
     global wikia_poster
 
     wikia_poster.disconnect()
-    time.sleep(5)
+    time.sleep(3)
 
 
-def restart_stream():
+def restart_stream(id):
     global wikia_listener
     global wikia_poster
 
+    wikia_listener = LLWikiaListener(id)
     wikia_poster = tweepy.Stream(auth=auth, listener=wikia_listener)
-    wikia_poster.filter(follow=id, async=True)
+    wikia_poster.filter(follow=id, track=['#梨子ちゃんクソコラグランプリ'], async=True)
 
 
 def stream_new_tweets():
@@ -204,6 +218,30 @@ def archive(userid, filename='saved.txt'):
             save.write((html.unescape(encode_tweet(status))))
 
 
+def yohane_compare():
+    wikia = api_twitter.get_status(752880219300605953)
+    llu = api_twitter.get_status(752880220823228416)
+    aikyan = api_twitter.get_status(752880230902005760)
+    secll = api_twitter.get_status(752880233334788096)
+
+    print('wikia: ' + wikia.created_at.strftime('%c'))
+    print('llu: ' + llu.created_at.strftime('%c'))
+    print('aikyan: ' + aikyan.created_at.strftime('%c'))
+    print('secll: ' + secll.created_at.strftime('%c'))
+
+
+def save_hashtag(hashtag):
+    for status in tweepy.Cursor(api_twitter.search, q=hashtag).items(1000):
+        try:
+            for media in status.extended_entities['media']:
+                print(media['media_url'])
+                urllib.request.urlretrieve(media['media_url'], os.path.join(os.getcwd(), os.path.join('files', 'riko_meme'), media['media_url'].link.split('/')[-1]))
+        except AttributeError:
+            pass
+
+
+
 init_twitter()
+#yohane_compare()
 #init_stream()
 

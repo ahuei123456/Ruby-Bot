@@ -1,33 +1,24 @@
 from discord.ext import commands
 from cogs.utils import utilities
 from cogs.utils import checks
-from cogs import streams
 from cogs.utils import twitconn
 import re
 
 debug = False
 information = "Ruby Bot, your one-stop solution for music queueing! (Now updated with commands.ext)\nCreated with 100% stolen code from Chezz and link2110.\nThank you for using Ruby Bot!"
 if debug:
-    bot = commands.Bot(command_prefix=commands.when_mentioned_or('*'), description=information)
+    bot = commands.Bot(command_prefix=commands.when_mentioned_or('~'), description=information)
 else:
     bot = commands.Bot(command_prefix=commands.when_mentioned_or('~'), description=information)
 
 initial_extensions = ['cogs.administrative', 'cogs.music', 'cogs.info', 'cogs.memes']
 if not debug:
-    posts = streams.Streams(bot)
+    initial_extensions.append('cogs.streams')
 
 
 @bot.event
 async def on_ready():
-    global posts
     print('Logged in as:\n{0} (ID: {0.id})'.format(bot.user))
-    if not debug:
-        await posts.stream()
-        try:
-            bot.add_cog(posts)
-        except Exception as e:
-            print('couldnt add stream????')
-            print(e)
 
 
 @bot.event
@@ -35,13 +26,6 @@ async def on_error(event, *args, **kwargs):
     print(event)
     print(str(args))
     print(str(kwargs))
-
-
-@bot.event
-async def on_resumed():
-    print('Resumed')
-    if not debug:
-        await posts.reboot_stream()
 
 
 @bot.event
@@ -58,8 +42,6 @@ async def on_message(message):
 
 
 if __name__ == "__main__":
-    if not debug:
-        twitconn.init_stream()
 
     for extension in initial_extensions:
         try:

@@ -3,7 +3,7 @@ import asyncio
 import discord
 from discord.ext import commands
 
-from cogs.utils import dbconn, texttable, utilities
+from cogs.utils import dbconn, texttable, utilities, checks
 
 if not discord.opus.is_loaded():
     # the 'opus' library here is opus.dll on windows
@@ -402,6 +402,7 @@ class Music:
                 pass
 
     @commands.command(pass_context=True, no_pm=True)
+    @checks.is_owner()
     async def join(self, ctx, *, channel: discord.Channel):
         """Joins a voice channel."""
         try:
@@ -414,6 +415,7 @@ class Music:
             await self.bot.say('Ready to play audio in ' + channel.name)
 
     @commands.command(pass_context=True, no_pm=True)
+    @checks.is_owner()
     async def summon(self, ctx):
         """Summons the bot to join your voice channel."""
         summoned_channel = ctx.message.author.voice_channel
@@ -430,6 +432,7 @@ class Music:
         return True
 
     @commands.command(pass_context=True, no_pm=True)
+    @checks.is_owner()
     async def play(self, ctx, *, song: str):
         """Plays a song.
         If there is a song currently in the queue, then it is
@@ -474,6 +477,7 @@ class Music:
             await self.bot.say('Set the volume to {:.0%}'.format(player.volume))
 
     @commands.command(pass_context=True, no_pm=True)
+    @checks.is_owner()
     async def pause(self, ctx):
         """Pauses the currently played song."""
         state = self.get_voice_state(ctx.message.server)
@@ -482,6 +486,7 @@ class Music:
             player.pause()
 
     @commands.command(pass_context=True, no_pm=True)
+    @checks.is_owner()
     async def resume(self, ctx):
         """Resumes the currently played song."""
         state = self.get_voice_state(ctx.message.server)
@@ -544,6 +549,7 @@ class Music:
         else:
             skip_count = len(state.skip_votes)
             await self.bot.say('Now playing {} [skips: {}/3]'.format(state.current, skip_count))
+
 
 def setup(bot):
     bot.add_cog(Music(bot))

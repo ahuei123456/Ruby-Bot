@@ -194,6 +194,15 @@ def load_credentials():
         return json.load(f)
 
 
+def load_list():
+    path = os.path.join(os.getcwd(), 'files', 'credentials.json')
+    with open(path, 'r+') as f:
+        data = json.load(f)
+
+        f.seek(0)  # <--- should reset file position to the beginning.
+        json.dump(data, f, indent=4)
+
+
 def is_dm(msg):
     server = msg.server
     if not server:

@@ -3,18 +3,23 @@ import bs4
 import re
 import random
 import codecs
+import os
 
 from discord.ext import commands
+from cogs.utils import checks
 
+path_qaz = os.path.join(os.getcwd(), 'files', 'qaz.txt')
+path_riko = os.path.join(os.getcwd(), 'files', 'riko_meme')
 
 class Memes:
 
     def __init__(self, bot):
         self.bot = bot
         self.init_qaz()
+        self.init_riko()
 
     def init_qaz(self):
-        self.filename = 'files\qaz.txt'
+        self.filename = path_qaz
         self.qaz_file = open(self.filename, 'r')
         self.qaz_list = dict()
 
@@ -32,6 +37,9 @@ class Memes:
             self.qaz_list[qaz_tag.strip()] = qaz_post.strip()
         self.qaz_file.close()
         self.qaz_file = open(self.filename, 'a')
+
+    def init_riko(self):
+        self.riko_memes = os.listdir(path_riko)
 
     @commands.command(name='tsun', no_pm=True)
     async def tsun(self, *, index: str=''):
@@ -113,6 +121,32 @@ class Memes:
         Displays a list of all saved qaz quotes.
         """
         await self.bot.say(list(self.qaz_list.keys()))
+
+    @commands.group(name='riko', pass_context=True, invoke_without_command=True)
+    async def riko(self, ctx, filename=""):
+        """
+        Uploads a Riko meme.
+        Chooses a random meme if filename is not specified.
+        :param filename: Filename of the meme.
+        """
+        if ctx.invoked_subcommand is None:
+            await self.upload_riko(filename)
+
+    @riko.command(name='list')
+    async def r_list(self):
+        await self.bot.say('There are currently {} Riko memes!'.format(str(len(self.riko_memes))))
+
+    @riko.command(name='refresh', pass_context=True)
+    @checks.is_owner()
+    async def r_refresh(self, ctx):
+        self.init_riko()
+        await self.bot.say('Database refreshed!')
+
+    async def upload_riko(self, filename):
+        if not filename in self.riko_memes:
+            filename = self.riko_memes[random.randrange(0, len(self.riko_memes))]
+        await self.bot.upload(fp=os.path.join(path_riko, filename), content=filename)
+        print('uploaded riko meme')
 
 
 def setup(bot):
