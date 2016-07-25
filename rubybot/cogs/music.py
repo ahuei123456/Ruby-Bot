@@ -2,6 +2,7 @@ import asyncio
 
 import discord
 from discord.ext import commands
+from discord.ext.commands import BucketType
 
 from cogs.utils import dbconn, texttable, utilities, checks
 
@@ -65,6 +66,8 @@ class VoiceState:
 
 class Music:
     search_results = 'Here are the results of your search:'
+    playlist_details = 'Details for playlist {}:'
+    playlist_playlists = 'List of your playlists:'
     error_excess_results = 'Your search for "{0}" returned too many results!'
     error_excess_results_generic = 'Your search returned too many results!'
     error_no_results = 'Your search for "{0}" returned no results!'
@@ -80,7 +83,8 @@ class Music:
     tbl_song_info = ('Song Code', 'Song Title', 'Song Artist', 'Song Album')
     tbl_album_list = ('Album Name',)
     tbl_suggest = ('ID', 'Creator', 'Suggestion', 'Status')
-
+    tbl_plist = ('ID', 'Song Code', 'Song Title')
+    tbl_plists = ('Playlist Name',)
     code_block = '```'
 
     char_limit_suggest = 160
@@ -333,6 +337,7 @@ class Music:
 
     ######### PLAYLIST #########
     @commands.group(pass_context=True, invoke_without_command=True)
+    @commands.cooldown(1, 120, BucketType.user)
     async def playlist(self, ctx, *, name: str):
         """
         Lets you save your song playlists.
@@ -377,6 +382,51 @@ class Music:
         utilities.create_playlist(name, ctx.message.author)
         await self.bot.say('Successfully created playlist "{}"!'.format(name))
 
+    @playlist.command(name='delete', pass_context=True)
+    async def pdelete(self, ctx, name, index:int):
+        """
+        Deletes a song from a playlist.
+        :param name: Name of the playlist.
+        :param index: Index of the song to remove from the playlist. Enter -1 to delete the whole playlist.
+        """
+        if index > 0:
+            utilities.del_from_playlist(name, ctx.message.author, index)
+            await self.bot.say('Successfully deleted song number {} from playlist "{}"!'.format(str(index), name))
+        else:
+            utilities.del_playlist(name, ctx.message.author)
+            await self.bot.say('Successfully deleted playlist "{}"!'.format(name))
+
+    @playlist.command(name='list', pass_context=True)
+    async def plist(self, ctx, *, name=''):
+        """
+        View a playlist in order.
+        View all the playlists you own if a name is not specified.
+        :param name: Name of the playlist.
+        """
+        if not name is '':
+            playlist = utilities.get_playlist_songs(name, ctx.message.author)
+            details = self.get_playlist_details(playlist)
+
+            await self.print_table(ctx, self.playlist_details.format(name), details, self.tbl_plist, len(details) + 1)
+        else:
+            playlists = utilities.get_playlist_list(ctx.message.author)
+            await self.print_table(ctx, self.playlist_playlists, playlists, self.tbl_plists, len(playlists) + 1)
+
+    def get_playlist_details(self, playlist):
+        num = 1
+        details = list()
+
+        for song in playlist:
+            info = list()
+            info.append(num)
+            info.append(song[dbconn.columns_music.index('code')])
+            info.append(song[dbconn.columns_music.index('title')])
+
+            details.append(info)
+
+            num += 1
+
+        return details
 
     ######### MUSICBOT #########
     def get_voice_state(self, server):

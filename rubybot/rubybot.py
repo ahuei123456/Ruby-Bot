@@ -44,11 +44,7 @@ async def on_message(message):
 if __name__ == "__main__":
 
     for extension in initial_extensions:
-        try:
-            bot.load_extension(extension)
-        except Exception as e:
-            print(e)
-            print('failed to load extension {}'.format(extension))
+        bot.load_extension(extension)
 
     credentials = utilities.load_credentials()
     bot_token = credentials['token']

@@ -6,10 +6,15 @@ import codecs
 import os
 
 from discord.ext import commands
+from discord.ext.commands import BucketType
 from cogs.utils import checks
 
 path_qaz = os.path.join(os.getcwd(), 'files', 'qaz.txt')
 path_riko = os.path.join(os.getcwd(), 'files', 'riko_meme')
+
+nsfw = [
+    "CngcndGUEAAZh8q.jpg", "Cnsqi9DUsAAtJG_.jpg"
+]
 
 class Memes:
 
@@ -42,6 +47,7 @@ class Memes:
         self.riko_memes = os.listdir(path_riko)
 
     @commands.command(name='tsun', no_pm=True)
+    @commands.cooldown(1, 5, BucketType.user)
     async def tsun(self, *, index: str=''):
         """
         Displays a post from tsuntsunlive's Instagram.
@@ -89,6 +95,7 @@ class Memes:
         return data
 
     @commands.group(pass_context=True, no_pm=True)
+    @commands.cooldown(1, 5, BucketType.user)
     async def qaz(self, ctx):
         """
         Lets you save dank qaz quotes.
@@ -123,6 +130,7 @@ class Memes:
         await self.bot.say(list(self.qaz_list.keys()))
 
     @commands.group(name='riko', pass_context=True, invoke_without_command=True)
+    @commands.cooldown(1, 5, BucketType.user)
     async def riko(self, ctx, filename=""):
         """
         Uploads a Riko meme.
@@ -145,6 +153,8 @@ class Memes:
     async def upload_riko(self, filename):
         if not filename in self.riko_memes:
             filename = self.riko_memes[random.randrange(0, len(self.riko_memes))]
+            while filename in nsfw:
+                filename = self.riko_memes[random.randrange(0, len(self.riko_memes))]
         await self.bot.upload(fp=os.path.join(path_riko, filename), content=filename)
         print('uploaded riko meme')
 

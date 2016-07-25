@@ -1,13 +1,6 @@
-import tweepy
-import time
-import html
-import urllib.request
-import os
-import codecs
-import bs4
-import requests
-
+import tweepy, time, html, urllib.request, os, datetime
 from cogs.utils import utilities
+from datetime import timezone, timedelta
 
 user_encode = ["Username: {0.screen_name}",
                 "Display name: {0.name}",
@@ -38,34 +31,22 @@ class LLWikiaListener(tweepy.StreamListener):
     def on_status(self, status):
         try:
             text = html.unescape(status.text)
-            
-            if text.find('#梨子ちゃんクソコラグランプリ') != -1:
+            if text.find('#千歌ちゃんクソコラグランプリ') != -1:
                 try:
                     for media in status.extended_entities['media']:
                         print(media['media_url'])
                         fname = media['media_url'].split('/')
-                        urllib.request.urlretrieve(media['media_url'], os.path.join(os.getcwd(), 'files', 'riko_meme', fname[len(fname) - 1]))
+                        urllib.request.urlretrieve(media['media_url'], os.path.join(os.getcwd(), 'files', 'chika_meme', fname[len(fname) - 1]))
                 except AttributeError as e:
                     print(e)
-            
+
+
             if is_reply(status):
                 return
             if not str(status.user.id) in self.id:
                 return
-            user = html.unescape(status.user.name)
-            if is_retweet(status):
-                text = html.unescape('RT {0.user.name}: {0.text}'.format(status.retweeted_status))
-            else:
-                text = html.unescape(status.text)
-            send = "Latest tweet by {0}: {1}\n".format(user, text)
-            try:
-                for media in status.extended_entities['media']:
-                    send += media['media_url'] + ' '
-            except AttributeError:
-                pass
 
-            fstatus = (str(status.user.id), send.strip())
-            self.statuses.append(fstatus)
+            self.statuses.append(status)
         except Exception as e:
             print(e)
 
@@ -108,7 +89,7 @@ def init_stream(id):
 
     wikia_listener = LLWikiaListener(id)
     wikia_poster = tweepy.Stream(auth=auth, listener=wikia_listener)
-    wikia_poster.filter(follow=id, track=['#梨子ちゃんクソコラグランプリ'], async=True)
+    wikia_poster.filter(follow=id, track=['#千歌ちゃんクソコラグランプリ'], async=True)
 
 
 def kill_stream():
@@ -124,7 +105,7 @@ def restart_stream(id):
 
     wikia_listener = LLWikiaListener(id)
     wikia_poster = tweepy.Stream(auth=auth, listener=wikia_listener)
-    wikia_poster.filter(follow=id, track=['#梨子ちゃんクソコラグランプリ'], async=True)
+    wikia_poster.filter(follow=id, track=['#千歌ちゃんクソコラグランプリ'], async=True)
 
 
 def stream_new_tweets():
@@ -239,6 +220,46 @@ def save_hashtag(hashtag):
         except AttributeError:
             pass
 
+
+def encode_status(status):
+    user = html.unescape(status.user.name)
+    created = str(status.created_at) + ' UTC'
+    text = ''
+    if is_retweet(status):
+        text += html.unescape('RT {0.user.name}: {0.text}'.format(status.retweeted_status))
+    else:
+        text += html.unescape(status.text)
+    send = "{} - Tweet by {}: {}\n".format(created, user, text)
+
+    for link in get_links(status):
+        send += link + ' '
+
+    return send.strip()
+
+
+def get_links(status):
+    links = []
+    try:
+        for media in status.extended_entities['media']:
+            if not media['type'] == 'video':
+                links.append(media['media_url'])
+            else:
+                videos = media['video_info']['variants']
+                bitrate = 0
+                index = 0
+                for i in range(0, len(videos)):
+                    if videos[i]['content_type'] == 'video/mp4':
+                        br = int(videos[i]['bitrate'])
+                        print(br)
+                        if br > bitrate:
+                            bitrate = br
+                            index = i
+
+                links.append(videos[index]['url'])
+    except AttributeError:
+        pass
+
+    return links
 
 
 init_twitter()

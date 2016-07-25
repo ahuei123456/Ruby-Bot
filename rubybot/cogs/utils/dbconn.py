@@ -61,8 +61,40 @@ class MusicLinker(object):
 
         print(update)
 
+    def playlist_del_song(self, name, owner, num:int):
+        data = self.playlist_get(name, owner)[0].split()
+
+        data.pop(num - 1)
+
+        updated = ''
+        for code in data:
+            updated += code + ' '
+
+        updated = updated.strip()
+
+        update = "UPDATE {} SET {} = ? WHERE {} IS ? AND {} IS ?".format(table_playlist, columns_playlist[3],
+                                                                         columns_playlist[1], columns_playlist[2])
+
+        self.cursor.execute(update, (updated, name, owner))
+        self.db.commit()
+
+        print(update)
+
+    def playlist_del(self, name, owner):
+        delete = "DELETE FROM {} WHERE {} IS ? AND {} IS ?".format(table_playlist, columns_playlist[1], columns_playlist[2])
+
+        self.cursor.execute(delete, (name, owner))
+        self.db.commit()
+
     def playlist_get(self, name, owner):
         data = self.playlist_data(name, owner)
+        return data
+
+    def playlist_all(self, owner):
+        all = "SELECT {} FROM {} WHERE {} IS ? COLLATE NOCASE".format(columns_playlist[1], table_playlist, columns_playlist[2])
+
+        results = self.cursor.execute(all, (owner, ))
+        data = results.fetchall()
         return data
 
     def playlist_data(self, name, owner):
@@ -81,7 +113,7 @@ class MusicLinker(object):
         self.db.commit()
 
     def playlist_list(self, owner):
-        retrieve = "SELECT {} FROM {} WHERE {} IS ?".format(columns_playlist[3], table_playlist, columns_playlist[2])
+        retrieve = "SELECT {} FROM {} WHERE {} IS ?".format(columns_playlist[1], table_playlist, columns_playlist[2])
         results = self.cursor.execute(retrieve, (owner, ))
 
         data = results.fetchall()

@@ -114,6 +114,20 @@ def get_playlist(name, owner):
         raise ValueError('No playlist found!')
     return playlist
 
+def get_playlist_list(owner):
+    playlists = music.playlist_list(owner.id)
+    if playlists is None or len(playlists) == 0:
+        raise ValueError('You do not have any playlists!')
+    return playlists
+
+
+def del_from_playlist(name, owner, num:int):
+    music.playlist_del_song(name, owner.id, num)
+
+
+def del_playlist(name, owner):
+    music.playlist_del(name, owner.id)
+
 
 def add_song_to_playlist(name, owner, code):
     music.playlist_add(name, owner.id, code)

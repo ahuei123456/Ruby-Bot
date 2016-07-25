@@ -4,10 +4,7 @@ from cogs.utils import twitconn
 from cogs.utils import checks
 import json
 import os
-from discord.errors import Forbidden
 
-channels_text = ['139978577901780992', '172670451405946880']
-channels_obj = []
 
 class Streams:
 
@@ -38,9 +35,6 @@ class Streams:
             print('Resumed')
             await self.reboot_stream()
 
-    def get_stalks(self):
-        return list(self.destinations['destinations'].keys())
-
     async def stream(self):
         if self.loop is None:
             await self.start()
@@ -66,8 +60,9 @@ class Streams:
             statuses = twitconn.stream_new_tweets()
             while len(statuses) > 0:
                 fstatus = statuses.pop(0)
-                status = fstatus[1]
-                id = fstatus[0]
+                id = str(fstatus.user.id)
+
+                status = twitconn.encode_status(fstatus)
 
                 targets = self.destinations['destinations']
                 try:
@@ -111,13 +106,42 @@ class Streams:
         await self.restart_stream()
         await self.bot.say('Stream started!')
 
-    @commands.command(hidden=True, pass_context=True)
+    @commands.group(hidden=True, pass_context=True, invoke_without_command=True)
     @checks.is_owner()
     async def stalk(self, ctx, user):
         channel = ctx.message.channel.id
-        self.add_channel(user, channel)
-        await self.bot.say('Now stalking ' + user + ' in channel ' + ctx.message.channel.name + '!')
-        await self.reboot_stream()
+        if self.add_channel(user, channel):
+            await self.bot.say('Now stalking ' + user + ' in channel ' + ctx.message.channel.name + '!')
+            await self.reboot_stream()
+        else:
+            await self.bot.say('No longer stalking ' + user + ' in channel ' + ctx.message.channel.name + '!')
+            await self.reboot_stream()
+
+    @stalk.command(name='list', pass_context=True, hidden=True)
+    async def slist(self, ctx):
+        channel = ctx.message.channel.id
+
+        stalks = []
+
+        for key in self.get_stalks():
+            channels = self.destinations['destinations'][key]
+
+            if channel in channels:
+                stalks.append(key)
+
+        if len(stalks):
+            await self.bot.say('Stalked twitter accounts on this channel: ' + str(stalks))
+        else:
+            await self.bot.say('This channel is not stalking any twitter accounts.')
+
+    @commands.command(hidden=True, pass_context=True)
+    @checks.is_owner()
+    async def blacklist(self, ctx):
+        channel = ctx.message.channel.id
+        if not self.blacklist_channel(channel):
+            await self.bot.say("Now blacklisting this channel.")
+        else:
+            await self.bot.say("No longer blacklisting this channel.")
 
     async def kill_stream(self):
         twitconn.kill_stream()
@@ -132,17 +156,43 @@ class Streams:
     def add_channel(self, twitter_id, channel_id):
         try:
             channels = self.destinations['destinations'][twitter_id]
-            if channel_id not in channels:
-                channels.append(channel_id)
+            if channel_id in channels:
+                channels.remove(channel_id)
+                self.update_json()
+                return False
+            channels.append(channel_id)
         except KeyError:
             channels = [channel_id, ]
             self.destinations['destinations'][twitter_id] = channels
 
-        path = os.path.join(os.getcwd(), 'files', 'tweets.json')
-        with open(path, 'r+') as f:
+        self.update_json()
 
+        return True
+
+    def blacklist_channel(self, channel_id):
+        try:
+            channels = self.destinations['blacklist']
+            if channel_id in channels:
+                channels.remove(channel_id)
+                self.update_json()
+                return True
+            channels.append(channel_id)
+        except KeyError:
+            channels = [channel_id, ]
+            self.destinations['blacklist'] = channels
+
+        self.update_json()
+
+        return False
+
+    def update_json(self):
+        path = os.path.join(os.getcwd(), 'files', 'tweets.json')
+        with open(path, 'w') as f:
             f.seek(0)  # <--- should reset file position to the beginning.
             json.dump(self.destinations, f, indent=4)
+
+    def get_stalks(self):
+        return list(self.destinations['destinations'].keys())
 
 
 

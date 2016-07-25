@@ -2,7 +2,8 @@ from discord.ext import commands
 from cogs.utils import utilities
 from cogs.utils import checks
 from cogs.utils import texttable
-import asyncio
+
+import asyncio, os, urllib.request
 
 class Administrative:
 
@@ -40,6 +41,34 @@ class Administrative:
     async def nick(self, ctx, *, nickname: str=None):
         member = ctx.message.server.me
         await self.bot.change_nickname(member, nickname)
+
+    @commands.command(hidden=True, pass_context=True, no_pm=True)
+    @checks.is_owner()
+    async def clone(self, ctx):
+        try:
+            clonee = ctx.message.mentions[0]
+            await self.bot.change_nickname(ctx.message.server.me, clonee.display_name)
+            print(clonee.avatar_url)
+            fname = clonee.avatar_url.split('/')
+            user_agent = 'Mozilla/5.0 (Windows; U; Windows NT 5.1; en-US; rv:1.9.0.7) Gecko/2009021910 Firefox/3.0.7'
+            headers = {'User-Agent': user_agent,}
+            edited_url= 'https://cdn.discordapp.com/avatars/' + fname[len(fname) - 3] + '/' + fname[len(fname) - 1]
+            print(edited_url)
+            full = os.path.join('files', 'stolen_avatars', fname[len(fname) - 1])
+
+            request = urllib.request.Request(url=edited_url, headers=headers)
+            response = urllib.request.urlopen(request)
+            with open(full, 'b+w') as f:
+                f.write(response.read())
+            with open(full, 'rb') as fp:
+                await self.bot.edit_profile(avatar=fp.read())
+        except IndexError:
+            with open(os.path.join('files', 'ruby.png'), 'rb') as fp:
+                await self.bot.edit_profile(avatar=fp.read())
+                await self.bot.change_nickname(ctx.message.server.me, None)
+
+        await self.bot.say(':ok_hand:')
+
 
     # Suggestion commands from here onward
     @commands.command(name='suggest', pass_context=True)
