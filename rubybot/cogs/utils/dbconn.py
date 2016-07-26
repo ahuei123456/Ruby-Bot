@@ -53,7 +53,7 @@ class MusicLinker(object):
             data += ' ' + code
 
         data = data.strip()
-        update = "UPDATE {} SET {} = ? WHERE {} IS ? AND {} IS ?".format(table_playlist, columns_playlist[3],
+        update = "UPDATE {} SET {} = ? WHERE {} LIKE ? AND {} LIKE ? COLLATE NOCASE".format(table_playlist, columns_playlist[3],
                                                                            columns_playlist[1], columns_playlist[2])
 
         self.cursor.execute(update, (data, name, owner))
@@ -72,7 +72,7 @@ class MusicLinker(object):
 
         updated = updated.strip()
 
-        update = "UPDATE {} SET {} = ? WHERE {} IS ? AND {} IS ?".format(table_playlist, columns_playlist[3],
+        update = "UPDATE {} SET {} = ? WHERE {} LIKE ? AND {} LIKE ? COLLATE NOCASE".format(table_playlist, columns_playlist[3],
                                                                          columns_playlist[1], columns_playlist[2])
 
         self.cursor.execute(update, (updated, name, owner))
@@ -98,7 +98,7 @@ class MusicLinker(object):
         return data
 
     def playlist_data(self, name, owner):
-        retrieve = "SELECT {} FROM {} WHERE {} IS ? AND {} IS ? COLLATE NOCASE".format(columns_playlist[3], table_playlist,
+        retrieve = "SELECT {} FROM {} WHERE {} LIKE ? AND {} LIKE ? COLLATE NOCASE".format(columns_playlist[3], table_playlist,
                                                                         columns_playlist[1], columns_playlist[2])
         print(retrieve)
         print(name + ' ' + owner)

@@ -1,6 +1,5 @@
-import tweepy, time, html, urllib.request, os, datetime
+import tweepy, time, html, urllib.request, os, re, bs4, requests
 from cogs.utils import utilities
-from datetime import timezone, timedelta
 
 user_encode = ["Username: {0.screen_name}",
                 "Display name: {0.name}",
@@ -240,27 +239,59 @@ def encode_status(status):
 def get_links(status):
     links = []
     try:
-        for media in status.extended_entities['media']:
-            if not media['type'] == 'video':
-                links.append(media['media_url'])
-            else:
-                videos = media['video_info']['variants']
-                bitrate = 0
-                index = 0
-                for i in range(0, len(videos)):
-                    if videos[i]['content_type'] == 'video/mp4':
-                        br = int(videos[i]['bitrate'])
-                        print(br)
-                        if br > bitrate:
-                            bitrate = br
-                            index = i
+        if hasattr(status, 'extended_entities') and 'media' in status.extended_entities.keys():
+            for media in status.extended_entities['media']:
+                if not media['type'] == 'video':
+                    links.append(media['media_url'])
+                else:
+                    videos = media['video_info']['variants']
+                    bitrate = 0
+                    index = 0
+                    for i in range(0, len(videos)):
+                        if videos[i]['content_type'] == 'video/mp4':
+                            br = int(videos[i]['bitrate'])
+                            print(br)
+                            if br > bitrate:
+                                bitrate = br
+                                index = i
 
-                links.append(videos[index]['url'])
+                    links.append(videos[index]['url'])
+        else:
+            for link in status.entities['urls']:
+                ext = link['expanded_url']
+                if ext.find('www.instagram.com') != -1:
+                    links.append(get_insta(ext))
     except AttributeError:
         pass
 
     return links
 
+
+def get_insta(insta_link: str):
+    r = requests.get(insta_link)
+    html = r.content
+    soup = bs4.BeautifulSoup(html, 'html.parser')
+    food = soup.find_all('meta')
+    link = ''
+    for item in food:
+        try:
+            if item['property'] == 'og:image':
+                link = item['content']
+                link = link.split('?ig_cache_key')[0]
+            if item['property'] == 'og:video':
+                link = item['content']
+        except AttributeError:
+            pass
+        except KeyError:
+            pass
+
+    return link
+
+
+def parse_input(id_status):
+    id = id_status.split('/')
+    status = api_twitter.get_status(id[len(id) - 1])
+    return status
 
 init_twitter()
 #yohane_compare()

@@ -16,8 +16,6 @@ class Info:
     def __init__(self, bot):
         self.bot = bot
 
-
-
     @commands.group(name='lyrics', pass_context=True, invoke_without_command=True)
     async def lyrics(self, ctx, *, title:str):
         """
@@ -96,6 +94,11 @@ class Info:
                 await self.bot.say(info)
             except Exception as e:
                 await self.bot.say(e)
+
+    @twit.command()
+    async def post(self, tweet:str):
+        status = twitconn.parse_input(tweet)
+        await self.bot.say(twitconn.encode_status(status))
 
     @twit.command(hidden=True)
     async def archive(self, id, filename):

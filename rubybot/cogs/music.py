@@ -277,8 +277,11 @@ class Music:
 
     async def play_list(self, ctx, link_list):
         if not utilities.is_dm(ctx.message):
-            for link in link_list:
-                await self.play_song(ctx, link)
+            if len(link_list) > 50:
+                await self.bot.say('Please do not queue more than 50 songs at once!')
+            else:
+                for link in link_list:
+                    await self.play_song(ctx, link)
         else:
             await self.print_table(ctx, self.search_results, self.get_song_info(link_list), self.tbl_song_info, len(link_list))
 

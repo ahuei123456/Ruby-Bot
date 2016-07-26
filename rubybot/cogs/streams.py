@@ -21,8 +21,6 @@ class Streams:
 
         stalk = self.get_stalks()
 
-        print(stalk)
-
         twitconn.init_stream(stalk)
 
         @bot.event
