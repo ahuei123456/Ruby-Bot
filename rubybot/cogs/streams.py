@@ -55,6 +55,12 @@ class Streams:
         await self.bot.wait_until_ready()
         self.stop_loop = False
         while not self.stop_loop:
+            if not twitconn.wikia_poster.running:
+                print('Disconnected')
+                await self.reboot_stream()
+                print('Reconnected')
+                await asyncio.sleep(20)
+                continue
             statuses = twitconn.stream_new_tweets()
             while len(statuses) > 0:
                 fstatus = statuses.pop(0)

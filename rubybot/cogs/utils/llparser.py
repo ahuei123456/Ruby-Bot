@@ -1,9 +1,5 @@
-import requests
-import bs4
-import re
-import datetime
-from datetime import timezone
-from datetime import timedelta
+import datetime, html, re, bs4, requests
+from datetime import timezone, timedelta
 from copy import deepcopy
 import json
 
@@ -302,7 +298,7 @@ def encode_info(info_text, data):
     for label in info_text:
         try:
             line = label.format(**data) + '\n'
-            info += line
+            info += html.unescape(line)
         except AttributeError:
             pass
 

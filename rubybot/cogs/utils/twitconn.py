@@ -231,7 +231,7 @@ def encode_status(status):
     send = "{} - Tweet by {}: {}\n".format(created, user, text)
 
     for link in get_links(status):
-        send += link + ' '
+        send += link + '\n'
 
     return send.strip()
 
@@ -250,17 +250,19 @@ def get_links(status):
                     for i in range(0, len(videos)):
                         if videos[i]['content_type'] == 'video/mp4':
                             br = int(videos[i]['bitrate'])
-                            print(br)
                             if br > bitrate:
                                 bitrate = br
                                 index = i
 
                     links.append(videos[index]['url'])
-        else:
-            for link in status.entities['urls']:
-                ext = link['expanded_url']
-                if ext.find('www.instagram.com') != -1:
-                    links.append(get_insta(ext))
+
+        for link in status.entities['urls']:
+            ext = link['expanded_url']
+            if ext.find('www.instagram.com') != -1:
+                links.append(get_insta(ext))
+            elif ext.find('ameblo.jp') != -1:
+                for link in get_ameblo(ext):
+                    links.append(link)
     except AttributeError:
         pass
 
@@ -286,6 +288,26 @@ def get_insta(insta_link: str):
             pass
 
     return link
+
+
+def get_ameblo(ameblo_link: str):
+    r = requests.get(ameblo_link)
+    html = r.content
+    soup = bs4.BeautifulSoup(html, 'html.parser')
+
+    food = soup.find_all('a')
+
+    links = list()
+    for item in food:
+        try:
+            if 'detailOn' in item['class']:
+                for child in item.children:
+                    image = child['src'].split('?')[0]
+                    links.append(image)
+        except KeyError:
+            pass
+
+    return links
 
 
 def parse_input(id_status):
