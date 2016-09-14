@@ -6,12 +6,13 @@ import re
 
 debug = False
 information = "Ruby Bot, your one-stop solution for music queueing! (Now updated with commands.ext)\nCreated with 100% stolen code from Chezz and link2110.\nThank you for using Ruby Bot!"
+initial_extensions = ['cogs.administrative', 'cogs.music', 'cogs.info', 'cogs.memes']
 if debug:
     bot = commands.Bot(command_prefix=commands.when_mentioned_or('~'), description=information)
 else:
     bot = commands.Bot(command_prefix=commands.when_mentioned_or('~'), description=information)
 
-initial_extensions = ['cogs.administrative', 'cogs.music', 'cogs.info', 'cogs.memes']
+
 if not debug:
     initial_extensions.append('cogs.streams')
 
@@ -48,11 +49,7 @@ if __name__ == "__main__":
 
     credentials = utilities.load_credentials()
     bot_token = credentials['token']
-    while True:
-        try:
-            bot.run(bot_token)
-        except Exception:
-            pass
-    print('How da fuck did this get here')
+
+    bot.run(bot_token)
 
 
