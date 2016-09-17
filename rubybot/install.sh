@@ -1,10 +1,10 @@
 #!/bin/bash
 
 # Install Dependencies
-pip3 install async
-pip3 install discord.py
-pip3 install tweepy
-pip3 install bs4
+sudo pip3 install async
+sudo pip3 install discord.py
+sudo pip3 install tweepy
+sudo pip3 install bs4
 
 # Install Opus Dependency
 # http://www.linuxfromscratch.org/blfs/view/svn/multimedia/opus.html
