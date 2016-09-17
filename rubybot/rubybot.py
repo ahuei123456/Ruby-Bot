@@ -1,7 +1,6 @@
 from discord.ext import commands
 from cogs.utils import utilities
-from cogs.utils import checks
-from cogs.utils import twitconn
+
 import re
 
 debug = False
