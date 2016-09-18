@@ -1,7 +1,7 @@
 import random
 import os
 import json
-import discord
+
 from cogs.utils import dbconn
 from cogs.utils.dbconn import MusicLinker
 
@@ -224,4 +224,4 @@ def is_dm(msg):
     return False
 
 
-music = MusicLinker('files\music.db')
+music = MusicLinker(os.path.join('files', 'music.db'))
