@@ -89,12 +89,22 @@ class Music:
 
     char_limit_suggest = 160
 
+    song_prefix = dict()
+
     def __init__(self, bot):
         self.bot = bot
-        self.song_play = '!play'
+        self.song_play = 'play'
         self.voice_states = {}
 
+        self.song_prefix['default'] = '!'
+
         self.id_admin = '144803988963983360'
+
+    @commands.command(pass_context=True, hidden=True)
+    @checks.is_owner()
+    async def custom(self, ctx, *, prefix: str='!'):
+        self.song_prefix[ctx.message.server.id] = prefix
+        await self.bot.say("Prefix '" + prefix + "' set for server " + ctx.message.server.name +".")
 
     @commands.group(name='db', pass_context=True)
     async def db(self, ctx):
@@ -291,7 +301,11 @@ class Music:
         summoned_channel = None
         link = self.get_link(song)
         if not summoned_channel:
-            msg = await self.bot.say(self.song_play + ' ' + link)
+            try:
+                prefix = self.song_prefix[ctx.message.server.id] + self.song_play
+            except KeyError:
+                prefix = self.song_prefix['default'] + self.song_play
+            msg = await self.bot.say(prefix + ' ' + link)
             await asyncio.sleep(self.delay_del_play)
             await self.bot.delete_message(msg)
 
