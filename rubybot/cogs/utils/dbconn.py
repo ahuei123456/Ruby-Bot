@@ -267,3 +267,7 @@ class MusicLinker(object):
         data = self.cursor.execute(get_id, (id,))
         return data.fetchone()
 
+    def addsong(self, info):
+        self.cursor.execute('INSERT INTO songs VALUES(?,?,?,?,?,?,?,?,?,?,?,?)', info)
+        self.db.commit()
+

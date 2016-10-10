@@ -1,8 +1,5 @@
 from discord.ext import commands
-from cogs.utils import utilities
-from cogs.utils import checks
-from cogs.utils import texttable
-
+from cogs.utils import utilities, checks, texttable
 import asyncio, os, urllib.request
 
 class Administrative:
@@ -190,6 +187,20 @@ class Administrative:
                 return member
 
         return None
+
+    @commands.command(hidden=True)
+    @checks.is_owner()
+    async def addsong(self, *info:str):
+        """
+        code, title, artist, subunit, album, anime, year, season, category, link, parent, num
+        :return:
+        """
+
+        try:
+            utilities.addsong(info)
+            await self.bot.say('Added {}'.format(info))
+        except Exception as e:
+            await self.bot.say(e)
 
 
 def setup(bot):

@@ -2,7 +2,7 @@ import asyncio
 import codecs
 
 from discord.ext import commands
-from cogs.utils import llparser
+from cogs.utils import llparser, checks
 from cogs.utils import twitconn
 
 
@@ -48,6 +48,15 @@ class Info:
         :param title: Title of the song to retrieve lyrics for. Currently, the match must be exact with the title given on the wikia.
         """
         await self.get_lyrics(title, llparser.lyrics_lang[2])
+
+    @lyrics.command(name='update', hidden=True)
+    @checks.is_owner()
+    async def update(self):
+        """
+        Updates lyrics crawling.
+        """
+        llparser.wikia_crawl()
+        await self.bot.say("Lyrics database updated!")
 
     async def get_lyrics(self, title:str, language:str=None):
         try:
