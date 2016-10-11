@@ -1,4 +1,4 @@
-import asyncio
+import asyncio, os
 
 import discord
 from discord.ext import commands
@@ -214,7 +214,7 @@ class Music:
         Retrieves the current music database.
         """
         print('uploading')
-        await self.bot.upload(fp='files\music.db', content='Current database:')
+        await self.bot.upload(fp=os.path.join('files', 'music.db'), content='Current database:')
 
     async def pm_list(self, ctx, data):
         await self.print_table(ctx, self.search_results, self.get_song_info(data),
@@ -301,6 +301,7 @@ class Music:
         summoned_channel = None
         link = self.get_link(song)
         if not summoned_channel:
+            await self.play_url(ctx, link)
             try:
                 prefix = self.song_prefix[ctx.message.server.id] + self.song_play
             except KeyError:
@@ -311,6 +312,15 @@ class Music:
 
         else:
             await self.queue_music(ctx, link)
+
+    async def play_url(self, ctx, link):
+        try:
+            prefix = self.song_prefix[ctx.message.server.id] + self.song_play
+        except KeyError:
+            prefix = self.song_prefix['default'] + self.song_play
+        msg = await self.bot.say(prefix + ' ' + link)
+        await asyncio.sleep(self.delay_del_play)
+        await self.bot.delete_message(msg)
 
     def code(self, msg):
         return self.code_block + msg + self.code_block
@@ -468,7 +478,7 @@ class Music:
             except:
                 pass
 
-    @commands.command(pass_context=True, no_pm=True)
+    @commands.command(pass_context=True, no_pm=True, hidden=True)
     @checks.is_owner()
     async def join(self, ctx, *, channel: discord.Channel):
         """Joins a voice channel."""
@@ -481,7 +491,7 @@ class Music:
         else:
             await self.bot.say('Ready to play audio in ' + channel.name)
 
-    @commands.command(pass_context=True, no_pm=True)
+    @commands.command(pass_context=True, no_pm=True, hidden=True)
     @checks.is_owner()
     async def summon(self, ctx):
         """Summons the bot to join your voice channel."""
@@ -498,8 +508,7 @@ class Music:
 
         return True
 
-    @commands.command(pass_context=True, no_pm=True)
-    @checks.is_owner()
+    @commands.command(pass_context=True, no_pm=True, hidden=True)
     async def play(self, ctx, *, song: str):
         """Plays a song.
         If there is a song currently in the queue, then it is
@@ -508,7 +517,8 @@ class Music:
         The list of supported sites can be found here:
         https://rg3.github.io/youtube-dl/supportedsites.html
         """
-        await self.queue_music(ctx, song)
+        #await self.queue_music(ctx, song)
+        await self.play_url(ctx, song)
 
     async def queue_music(self, ctx, song: str):
         state = self.get_voice_state(ctx.message.server)
@@ -533,7 +543,8 @@ class Music:
             await self.bot.say('Enqueued ' + str(entry))
             await state.songs.put(entry)
 
-    @commands.command(pass_context=True, no_pm=True)
+    @commands.command(pass_context=True, no_pm=True, hidden=True)
+    @checks.is_owner()
     async def volume(self, ctx, value: int):
         """Sets the volume of the currently playing song."""
 
@@ -543,7 +554,7 @@ class Music:
             player.volume = value / 100
             await self.bot.say('Set the volume to {:.0%}'.format(player.volume))
 
-    @commands.command(pass_context=True, no_pm=True)
+    @commands.command(pass_context=True, no_pm=True, hidden=True)
     @checks.is_owner()
     async def pause(self, ctx):
         """Pauses the currently played song."""
@@ -552,7 +563,7 @@ class Music:
             player = state.player
             player.pause()
 
-    @commands.command(pass_context=True, no_pm=True)
+    @commands.command(pass_context=True, no_pm=True, hidden=True)
     @checks.is_owner()
     async def resume(self, ctx):
         """Resumes the currently played song."""
@@ -561,7 +572,8 @@ class Music:
             player = state.player
             player.resume()
 
-    @commands.command(pass_context=True, no_pm=True)
+    @commands.command(pass_context=True, no_pm=True, hidden=True)
+    @checks.is_owner()
     async def stop(self, ctx):
         """Stops playing audio and leaves the voice channel.
         This also clears the queue.
@@ -580,7 +592,8 @@ class Music:
         except:
             pass
 
-    @commands.command(pass_context=True, no_pm=True)
+    @commands.command(pass_context=True, no_pm=True, hidden=True)
+    @checks.is_owner()
     async def skip(self, ctx):
         """Vote to skip a song. The song requester can automatically skip.
         3 skip votes are needed for the song to be skipped.
@@ -606,7 +619,8 @@ class Music:
         else:
             await self.bot.say('You have already voted to skip this song.')
 
-    @commands.command(pass_context=True, no_pm=True)
+    @commands.command(pass_context=True, no_pm=True, hidden=True)
+    @checks.is_owner()
     async def playing(self, ctx):
         """Shows info about the currently played song."""
 
