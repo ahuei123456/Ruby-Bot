@@ -518,6 +518,7 @@ class Music:
         https://rg3.github.io/youtube-dl/supportedsites.html
         """
         #await self.queue_music(ctx, song)
+        await self.bot.delete_message(ctx.message)
         await self.play_url(ctx, song)
 
     async def queue_music(self, ctx, song: str):
