@@ -302,13 +302,6 @@ class Music:
         link = self.get_link(song)
         if not summoned_channel:
             await self.play_url(ctx, link)
-            try:
-                prefix = self.song_prefix[ctx.message.server.id] + self.song_play
-            except KeyError:
-                prefix = self.song_prefix['default'] + self.song_play
-            msg = await self.bot.say(prefix + ' ' + link)
-            await asyncio.sleep(self.delay_del_play)
-            await self.bot.delete_message(msg)
 
         else:
             await self.queue_music(ctx, link)
