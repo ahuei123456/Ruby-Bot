@@ -151,6 +151,9 @@ def wikia_crawl():
                         pass
 
 
+    links['Koremade no Love Live! ~Musical Ver.~'] = 'wiki/Koremade_no_Love_Live!'
+
+
 def sif_crawl():
     pass
 
