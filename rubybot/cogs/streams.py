@@ -75,6 +75,9 @@ class Streams:
                 except KeyError:
                     continue
 
+                if channel == None:
+                    continue
+
                 for channel in channels:
                     if channel in self.destinations['blacklist']:
                         continue
