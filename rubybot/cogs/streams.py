@@ -75,7 +75,7 @@ class Streams:
                 except KeyError:
                     continue
 
-                if channel == None:
+                if channels == None:
                     continue
 
                 for channel in channels:
@@ -85,7 +85,7 @@ class Streams:
                         send = self.bot.get_channel(channel)
                         await self.bot.send_message(send, status)
                     except Forbidden as e:
-                        print(channel)
+                        print(send.name)
                         print(e)
             await asyncio.sleep(5)
 
@@ -97,6 +97,7 @@ class Streams:
         await self.kill_stream()
         await self.bot.say('Stream killed!')
         await self.bot.say('Restarting stream...')
+        await asyncio.sleep(60)
         await self.restart_stream()
         await self.bot.say('Restart successful...?')
 
