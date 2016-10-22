@@ -2,7 +2,7 @@ from discord.ext import commands
 import asyncio
 from cogs.utils import twitconn
 from cogs.utils import checks
-from discord.errors import Forbidden
+from discord.errors import Forbidden, InvalidArgument
 import json
 import os
 
@@ -86,6 +86,9 @@ class Streams:
                         await self.bot.send_message(send, status)
                     except Forbidden as e:
                         print(send.name)
+                        print(e)
+                    except InvalidArgument as e:
+                        print(send)
                         print(e)
             await asyncio.sleep(5)
 
