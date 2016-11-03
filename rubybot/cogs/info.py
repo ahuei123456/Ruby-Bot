@@ -19,7 +19,8 @@ class Info:
     @commands.group(name='lyrics', pass_context=True, invoke_without_command=True)
     async def lyrics(self, ctx, *, title:str):
         """
-        Retrieves lyrics of a Love Live! song. Defaults to romaji if no language is specified.
+        Retrieves lyrics of a Love Live! song.
+        Defaults to romaji if no language is specified.
         :param title: Title of the song to retrieve lyrics for. Currently, the match must be exact with the title given on the wikia.
         """
         if ctx.invoked_subcommand is None:
@@ -118,7 +119,7 @@ class Info:
         """
         twitconn.archive(id, filename)
 
-    @commands.group()
+    @commands.group(hidden=True)
     async def sif(self):
         pass
 

@@ -106,21 +106,16 @@ class Music:
         self.song_prefix[ctx.message.server.id] = prefix
         await self.bot.say("Prefix '" + prefix + "' set for server " + ctx.message.server.name +".")
 
-    @commands.group(name='db', pass_context=True)
-    async def db(self, ctx):
-        """
-        Lets you queue songs from within Ruby Bot's database.
-        """
-        pass
-
-    @db.command(name='title', pass_context=True)
-    async def title(self, ctx, *, title: str):
+    @commands.command(pass_context=True)
+    async def queue(self, ctx, *, title: str):
         """Searches the music database by title for a song.
         Queues it if a single matching song is found.
         If multiple songs match the search term, a list of matching titles is displayed.
-        :param title: Song title to search for
         """
 
+        await self.title(ctx, title)
+
+    async def title(self, ctx, title: str):
         output = utilities.fix_input(title)
         data = utilities.title(output[0])
         if len(data) == 0:
@@ -131,8 +126,25 @@ class Music:
         else:
             await self.process(ctx, data)
 
+    @commands.group(name='db', pass_context=True)
+    async def db(self, ctx):
+        """
+        Advanced queueing commands.
+        """
+        pass
+
+    @db.command(name='title', pass_context=True)
+    async def dbtitle(self, ctx, *, title: str):
+        """Searches the music database by title for a song.
+        Queues it if a single matching song is found.
+        If multiple songs match the search term, a list of matching titles is displayed.
+        :param title: Song title to search for
+        """
+
+        await self.title(ctx, title)
+
     @db.command(name='album', pass_context=True)
-    async def album(self, ctx, *, album: str):
+    async def dbalbum(self, ctx, *, album: str):
         """Searches the music database by title for an album.
         Queues all of it if a single matching album is found.
         If multiple albums match the search term, a list of matching albums is displayed.

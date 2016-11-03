@@ -202,7 +202,7 @@ class Administrative:
         except Exception as e:
             await self.bot.say(e)
 
-    @commands.command(pass_context=True)
+    @commands.command(pass_context=True, hidden=True)
     @checks.is_owner()
     async def logs(self, ctx):
         await self.bot.upload(fp=os.path.join('files', 'rubybot-error-4.log'), content='Logs')
