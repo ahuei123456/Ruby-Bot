@@ -13,7 +13,7 @@ path_qaz = os.path.join(os.getcwd(), 'files', 'qaz.txt')
 path_riko = os.path.join(os.getcwd(), 'files', 'riko_meme')
 
 nsfw = [
-    "CngcndGUEAAZh8q.jpg", "Cnsqi9DUsAAtJG_.jpg"
+    "CngcndGUEAAZh8q.jpg", "Cnsqi9DUsAAtJG_.jpg", "Cnh5oJHUEAAICHv.jpg"
 ]
 
 class Memes:
@@ -157,6 +157,11 @@ class Memes:
                 filename = self.riko_memes[random.randrange(0, len(self.riko_memes))]
         await self.bot.upload(fp=os.path.join(path_riko, filename), content=filename)
         print('uploaded riko meme')
+
+    @riko.command()
+    @checks.is_owner()
+    async def blacklist(self, ctx, filename: str):
+        nsfw.append(filename)
 
 
 def setup(bot):
