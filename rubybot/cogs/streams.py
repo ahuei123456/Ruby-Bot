@@ -3,8 +3,7 @@ import asyncio
 from cogs.utils import twitconn
 from cogs.utils import checks
 from discord.errors import Forbidden, InvalidArgument
-import json
-import os
+import json, os, twitutils, linkutils, discordutils
 
 
 class Streams:
@@ -67,7 +66,8 @@ class Streams:
                 fstatus = statuses.pop(0)
                 id = str(fstatus.user.id)
 
-                status = twitconn.encode_status(fstatus)
+                #status = twitconn.encode_status(fstatus)
+                status = discordutils.encode_status(fstatus)
 
                 targets = self.destinations['destinations']
                 try:
@@ -83,7 +83,7 @@ class Streams:
                         continue
                     try:
                         send = self.bot.get_channel(channel)
-                        await self.bot.send_message(send, status)
+                        await self.bot.send_message(send, embed=status)
                     except Forbidden as e:
                         print(send.name)
                         print(e)
@@ -122,7 +122,8 @@ class Streams:
     @checks.is_owner()
     async def stalk(self, ctx, id):
         channel = ctx.message.channel.id
-        user = twitconn.get_user(id)
+        user = twitutils.get_user(twitconn.api_twitter, id)
+        #user = twitconn.get_user(id)
         if self.add_channel(user, channel):
             await self.bot.say('Added user {} to channel {} stalk queue!'.format(user.screen_name, ctx.message.channel.name))
         else:

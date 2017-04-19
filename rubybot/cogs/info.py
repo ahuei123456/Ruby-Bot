@@ -4,7 +4,7 @@ import codecs
 from discord.ext import commands
 from cogs.utils import llparser, checks
 from cogs.utils import twitconn
-
+import linkutils, discordutils
 
 class Info:
     max_char = 2000
@@ -108,7 +108,7 @@ class Info:
     @twit.command()
     async def post(self, tweet:str):
         status = twitconn.parse_input(tweet)
-        await self.bot.say(twitconn.encode_status(status))
+        await self.bot.say(discordutils.encode_status(status))
 
     @twit.command(hidden=True)
     async def archive(self, id, filename):
@@ -118,6 +118,24 @@ class Info:
         :param filename: Filename to save archive to
         """
         twitconn.archive(id, filename)
+
+    @commands.command(name='pics', pass_context=True)
+    async def pics(self, ctx, *, link:str):
+        """
+        Retrieves images from a specified link.
+        Currecnt supports instagram, ameblo, and lineblog. 
+        :param link: Link to retrieve images from.
+        """
+
+        try:
+            #info = twitconn.get_data_from_link(link)
+            pics = linkutils.get_link(link)
+            text = ''
+            for pic in pics:
+                text += pics + '"'
+            await self.bot.say(text)
+        except Exception as e:
+            await self.bot.say(e)
 
     @commands.group(hidden=True)
     async def sif(self):

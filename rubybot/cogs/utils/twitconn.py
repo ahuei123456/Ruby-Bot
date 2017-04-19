@@ -210,95 +210,6 @@ def save_hashtag(hashtag):
             pass
 
 
-def encode_status(status):
-    user = html.unescape(status.user.name)
-    created = str(status.created_at) + ' UTC'
-    text = ''
-    if is_retweet(status):
-        text += html.unescape('RT {0.user.name}: {0.text}'.format(status.retweeted_status))
-    else:
-        text += html.unescape(status.text)
-    send = "{} - Tweet by {}: {}\n".format(created, user, text)
-
-    for link in get_links(status):
-        send += link + '\n'
-
-    return send.strip()
-
-
-def get_links(status):
-    links = []
-    try:
-        if hasattr(status, 'extended_entities') and 'media' in status.extended_entities.keys():
-            for media in status.extended_entities['media']:
-                if not media['type'] == 'video':
-                    links.append(media['media_url'])
-                else:
-                    videos = media['video_info']['variants']
-                    bitrate = 0
-                    index = 0
-                    for i in range(0, len(videos)):
-                        if videos[i]['content_type'] == 'video/mp4':
-                            br = int(videos[i]['bitrate'])
-                            if br > bitrate:
-                                bitrate = br
-                                index = i
-
-                    links.append(videos[index]['url'])
-
-        for link in status.entities['urls']:
-            ext = link['expanded_url']
-            if ext.find('www.instagram.com') != -1:
-                links.append(get_insta(ext))
-            elif ext.find('ameblo.jp') != -1:
-                for link in get_ameblo(ext):
-                    links.append(link)
-    except AttributeError:
-        pass
-
-    return links
-
-
-def get_insta(insta_link: str):
-    r = requests.get(insta_link)
-    html = r.content
-    soup = bs4.BeautifulSoup(html, 'html.parser')
-    food = soup.find_all('meta')
-    link = ''
-    for item in food:
-        try:
-            if item['property'] == 'og:image':
-                link = item['content']
-                link = link.split('?ig_cache_key')[0]
-            if item['property'] == 'og:video':
-                link = item['content']
-        except AttributeError:
-            pass
-        except KeyError:
-            pass
-
-    return link
-
-
-def get_ameblo(ameblo_link: str):
-    r = requests.get(ameblo_link)
-    html = r.content
-    soup = bs4.BeautifulSoup(html, 'html.parser')
-
-    food = soup.find_all('a')
-
-    links = list()
-    for item in food:
-        try:
-            if 'detailOn' in item['class']:
-                for child in item.children:
-                    image = child['src'].split('?')[0]
-                    links.append(image)
-        except KeyError:
-            pass
-
-    return links
-
 
 def parse_input(id_status):
     id = id_status.split('/')
@@ -308,4 +219,3 @@ def parse_input(id_status):
 init_twitter()
 #yohane_compare()
 #init_stream()
-
