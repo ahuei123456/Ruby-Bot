@@ -100,6 +100,7 @@ def get_video(status):
 
 def get_images(status):
     links = []
+    medias = []
     try:
         i_status = status.extended_tweet
         medias = i_status['extended_entities']['media']
