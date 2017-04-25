@@ -198,6 +198,11 @@ class Info:
         await self.bot.say('Done!')
         print('done')
 
+    @commands.command(pass_context=True)
+    async def shill(self, ctx, link: str):
+        await self.bot.delete_message(ctx.message)
+        await self.bot.say(linkutils.shill(link))
+
 
 def setup(bot):
     bot.add_cog(Info(bot))
