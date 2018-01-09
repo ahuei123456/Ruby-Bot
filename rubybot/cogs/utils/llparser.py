@@ -97,7 +97,7 @@ info_current_en =[
     "{english_image}"
 ]
 
-ss_anime_start = datetime.datetime(2016, 7, 2, 22, 30, 0, 0, timezone(timedelta(hours=9), name='JST'))
+ss_anime_start = datetime.datetime(2017, 10, 7, 22, 30, 0, 0, timezone(timedelta(hours=9), name='JST'))
 ss_phrases = (
     '輝きたい！', '転校生をつかまえろ！', 'ファーストステップ', 'ふたりのキモチ'
 )
