@@ -207,6 +207,25 @@ def load_credentials():
     with open(path) as f:
         return json.load(f)
 
+def addsong(rawinfo):
+    info = list()
+    for i in range(0, len(rawinfo)):
+        if rawinfo[i] == '*':
+            print(True)
+            info.append(None)
+        else:
+            info.append(rawinfo[i])
+
+    while len(info) < 12:
+        info.append(None)
+
+    try:
+        info[len(info) - 1] = int(info)
+    except Exception:
+        pass
+
+    music.addsong(info)
+
 
 def load_list():
     path = os.path.join(os.getcwd(), 'files', 'credentials.json')

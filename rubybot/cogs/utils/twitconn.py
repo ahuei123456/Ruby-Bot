@@ -14,15 +14,14 @@ user_encode = ["Username: {0.screen_name}",
 
 user_url = "URL: {}"
 
-wikia_listener = None
-#id = ['2734031000', '357915189', '4423137133', '347849994', '1346933186', '739117766100189184']
+listener = None
 
 twit_url = r'https://twitter.com/'
 
-class LLWikiaListener(tweepy.StreamListener):
+class TweetListener(tweepy.StreamListener):
 
     def __init__(self, id):
-        super(LLWikiaListener, self).__init__()
+        super(TweetListener, self).__init__()
 
         self.statuses=list()
         self.id = id
@@ -30,15 +29,6 @@ class LLWikiaListener(tweepy.StreamListener):
     def on_status(self, status):
         try:
             text = html.unescape(status.text)
-            if text.find('#千歌ちゃんクソコラグランプリ') != -1:
-                try:
-                    for media in status.extended_entities['media']:
-                        print(media['media_url'])
-                        fname = media['media_url'].split('/')
-                        urllib.request.urlretrieve(media['media_url'], os.path.join(os.getcwd(), 'files', 'chika_meme', fname[len(fname) - 1]))
-                except AttributeError as e:
-                    print(e)
-
 
             if is_reply(status):
                 return
@@ -76,8 +66,8 @@ def init_twitter():
 
 
 def init_stream(id):
-    global wikia_listener
-    global wikia_poster
+    global listener
+    global poster
     # ll_wikia 2734031000
     # mkydyrea 3299062544
     # LLupdates 4423137133
@@ -86,29 +76,29 @@ def init_stream(id):
     # lovelive_sif 1346933186
     # ischyrb 357915189
 
-    wikia_listener = LLWikiaListener(id)
-    wikia_poster = tweepy.Stream(auth=auth, listener=wikia_listener)
-    wikia_poster.filter(follow=id, track=['#千歌ちゃんクソコラグランプリ'], async=True)
+    listener = TweetListener(id)
+    poster = tweepy.Stream(auth=auth, listener=listener)
+    poster.filter(follow=id, track=['#千歌ちゃんクソコラグランプリ'], async=True)
 
 
 def kill_stream():
-    global wikia_poster
+    global poster
 
-    wikia_poster.disconnect()
+    poster.disconnect()
     time.sleep(3)
 
 
 def restart_stream(id):
-    global wikia_listener
-    global wikia_poster
+    global listener
+    global poster
 
-    wikia_listener = LLWikiaListener(id)
-    wikia_poster = tweepy.Stream(auth=auth, listener=wikia_listener)
-    wikia_poster.filter(follow=id, track=['#千歌ちゃんクソコラグランプリ'], async=True)
+    listener = TweetListener(id)
+    poster = tweepy.Stream(auth=auth, listener=listener)
+    poster.filter(follow=id, track=['#千歌ちゃんクソコラグランプリ'], async=True)
 
 
 def stream_new_tweets():
-    return wikia_listener.get_status()
+    return listener.get_status()
 
 
 def get_tweets(username: str, num=1):
@@ -220,95 +210,6 @@ def save_hashtag(hashtag):
             pass
 
 
-def encode_status(status):
-    user = html.unescape(status.user.name)
-    created = str(status.created_at) + ' UTC'
-    text = ''
-    if is_retweet(status):
-        text += html.unescape('RT {0.user.name}: {0.text}'.format(status.retweeted_status))
-    else:
-        text += html.unescape(status.text)
-    send = "{} - Tweet by {}: {}\n".format(created, user, text)
-
-    for link in get_links(status):
-        send += link + '\n'
-
-    return send.strip()
-
-
-def get_links(status):
-    links = []
-    try:
-        if hasattr(status, 'extended_entities') and 'media' in status.extended_entities.keys():
-            for media in status.extended_entities['media']:
-                if not media['type'] == 'video':
-                    links.append(media['media_url'])
-                else:
-                    videos = media['video_info']['variants']
-                    bitrate = 0
-                    index = 0
-                    for i in range(0, len(videos)):
-                        if videos[i]['content_type'] == 'video/mp4':
-                            br = int(videos[i]['bitrate'])
-                            if br > bitrate:
-                                bitrate = br
-                                index = i
-
-                    links.append(videos[index]['url'])
-
-        for link in status.entities['urls']:
-            ext = link['expanded_url']
-            if ext.find('www.instagram.com') != -1:
-                links.append(get_insta(ext))
-            elif ext.find('ameblo.jp') != -1:
-                for link in get_ameblo(ext):
-                    links.append(link)
-    except AttributeError:
-        pass
-
-    return links
-
-
-def get_insta(insta_link: str):
-    r = requests.get(insta_link)
-    html = r.content
-    soup = bs4.BeautifulSoup(html, 'html.parser')
-    food = soup.find_all('meta')
-    link = ''
-    for item in food:
-        try:
-            if item['property'] == 'og:image':
-                link = item['content']
-                link = link.split('?ig_cache_key')[0]
-            if item['property'] == 'og:video':
-                link = item['content']
-        except AttributeError:
-            pass
-        except KeyError:
-            pass
-
-    return link
-
-
-def get_ameblo(ameblo_link: str):
-    r = requests.get(ameblo_link)
-    html = r.content
-    soup = bs4.BeautifulSoup(html, 'html.parser')
-
-    food = soup.find_all('a')
-
-    links = list()
-    for item in food:
-        try:
-            if 'detailOn' in item['class']:
-                for child in item.children:
-                    image = child['src'].split('?')[0]
-                    links.append(image)
-        except KeyError:
-            pass
-
-    return links
-
 
 def parse_input(id_status):
     id = id_status.split('/')
@@ -318,4 +219,3 @@ def parse_input(id_status):
 init_twitter()
 #yohane_compare()
 #init_stream()
-

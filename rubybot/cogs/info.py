@@ -2,9 +2,9 @@ import asyncio
 import codecs
 
 from discord.ext import commands
-from cogs.utils import llparser
+from cogs.utils import llparser, checks
 from cogs.utils import twitconn
-
+import linkutils, discordutils
 
 class Info:
     max_char = 2000
@@ -19,7 +19,8 @@ class Info:
     @commands.group(name='lyrics', pass_context=True, invoke_without_command=True)
     async def lyrics(self, ctx, *, title:str):
         """
-        Retrieves lyrics of a Love Live! song. Defaults to romaji if no language is specified.
+        Retrieves lyrics of a Love Live! song.
+        Defaults to romaji if no language is specified.
         :param title: Title of the song to retrieve lyrics for. Currently, the match must be exact with the title given on the wikia.
         """
         if ctx.invoked_subcommand is None:
@@ -48,6 +49,15 @@ class Info:
         :param title: Title of the song to retrieve lyrics for. Currently, the match must be exact with the title given on the wikia.
         """
         await self.get_lyrics(title, llparser.lyrics_lang[2])
+
+    @lyrics.command(name='update', hidden=True)
+    @checks.is_owner()
+    async def update(self):
+        """
+        Updates lyrics crawling.
+        """
+        llparser.wikia_crawl()
+        await self.bot.say("Lyrics database updated!")
 
     async def get_lyrics(self, title:str, language:str=None):
         try:
@@ -98,7 +108,7 @@ class Info:
     @twit.command()
     async def post(self, tweet:str):
         status = twitconn.parse_input(tweet)
-        await self.bot.say(twitconn.encode_status(status))
+        await self.bot.say(discordutils.encode_status(status))
 
     @twit.command(hidden=True)
     async def archive(self, id, filename):
@@ -109,7 +119,25 @@ class Info:
         """
         twitconn.archive(id, filename)
 
-    @commands.group()
+    @commands.command(name='pics', pass_context=True)
+    async def pics(self, ctx, *, link:str):
+        """
+        Retrieves images from a specified link.
+        Currecnt supports instagram, ameblo, and lineblog. 
+        :param link: Link to retrieve images from.
+        """
+
+        try:
+            #info = twitconn.get_data_from_link(link)
+            pics = linkutils.get_link(link)
+            text = ''
+            for pic in pics:
+                text += pics + '"'
+            await self.bot.say(text)
+        except Exception as e:
+            await self.bot.say(e)
+
+    @commands.group(hidden=True)
     async def sif(self):
         pass
 
@@ -169,6 +197,11 @@ class Info:
         twitconn.save_hashtag('#' + hashtag)
         await self.bot.say('Done!')
         print('done')
+
+    @commands.command(pass_context=True)
+    async def shill(self, ctx, link: str):
+        await self.bot.delete_message(ctx.message)
+        await self.bot.say(linkutils.shill(link))
 
 
 def setup(bot):

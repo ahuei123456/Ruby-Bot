@@ -2,8 +2,8 @@ from discord.ext import commands
 import asyncio
 from cogs.utils import twitconn
 from cogs.utils import checks
-import json
-import os
+from discord.errors import Forbidden, InvalidArgument
+import json, os, twitutils, linkutils, discordutils
 
 
 class Streams:
@@ -55,7 +55,7 @@ class Streams:
         await self.bot.wait_until_ready()
         self.stop_loop = False
         while not self.stop_loop:
-            if not twitconn.wikia_poster.running:
+            if not twitconn.poster.running:
                 print('Disconnected')
                 await self.reboot_stream()
                 print('Reconnected')
@@ -66,7 +66,8 @@ class Streams:
                 fstatus = statuses.pop(0)
                 id = str(fstatus.user.id)
 
-                status = twitconn.encode_status(fstatus)
+                #status = twitconn.encode_status(fstatus)
+                status = discordutils.encode_status(fstatus)
 
                 targets = self.destinations['destinations']
                 try:
@@ -74,14 +75,20 @@ class Streams:
                 except KeyError:
                     continue
 
+                if channels == None:
+                    continue
+
                 for channel in channels:
                     if channel in self.destinations['blacklist']:
                         continue
                     try:
                         send = self.bot.get_channel(channel)
-                        await self.bot.send_message(send, status)
-                    except Exception as e:
-                        print(channel)
+                        await self.bot.send_message(send, embed=status)
+                    except Forbidden as e:
+                        print(send.name)
+                        print(e)
+                    except InvalidArgument as e:
+                        print(send)
                         print(e)
             await asyncio.sleep(5)
 
@@ -93,6 +100,7 @@ class Streams:
         await self.kill_stream()
         await self.bot.say('Stream killed!')
         await self.bot.say('Restarting stream...')
+        await asyncio.sleep(60)
         await self.restart_stream()
         await self.bot.say('Restart successful...?')
 
@@ -112,14 +120,14 @@ class Streams:
 
     @commands.group(hidden=True, pass_context=True, invoke_without_command=True)
     @checks.is_owner()
-    async def stalk(self, ctx, user):
+    async def stalk(self, ctx, id):
         channel = ctx.message.channel.id
+        user = twitutils.get_user(twitconn.api_twitter, id)
+        #user = twitconn.get_user(id)
         if self.add_channel(user, channel):
-            await self.bot.say('Now stalking ' + user + ' in channel ' + ctx.message.channel.name + '!')
-            await self.reboot_stream()
+            await self.bot.say('Added user {} to channel {} stalk queue!'.format(user.screen_name, ctx.message.channel.name))
         else:
-            await self.bot.say('No longer stalking ' + user + ' in channel ' + ctx.message.channel.name + '!')
-            await self.reboot_stream()
+            await self.bot.say('Added user {} to channel {} unfollow queue!'.format(user.screen_name, ctx.message.channel.name))
 
     @stalk.command(name='list', pass_context=True, hidden=True)
     async def slist(self, ctx):
@@ -148,16 +156,20 @@ class Streams:
             await self.bot.say("No longer blacklisting this channel.")
 
     async def kill_stream(self):
+        print('killing stream')
         twitconn.kill_stream()
 
     async def restart_stream(self):
+        print('restarting stream')
         twitconn.restart_stream(self.get_stalks())
 
     async def reboot_stream(self):
+        print('rebooting stream')
         twitconn.kill_stream()
         twitconn.restart_stream(self.get_stalks())
 
-    def add_channel(self, twitter_id, channel_id):
+    def add_channel(self, user, channel_id):
+        twitter_id = user.id_str
         try:
             channels = self.destinations['destinations'][twitter_id]
             if channel_id in channels:
@@ -197,8 +209,6 @@ class Streams:
 
     def get_stalks(self):
         return list(self.destinations['destinations'].keys())
-
-
 
 def setup(bot):
     bot.add_cog(Streams(bot))

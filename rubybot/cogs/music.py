@@ -1,4 +1,4 @@
-import asyncio
+import asyncio, os
 
 import discord
 from discord.ext import commands
@@ -89,28 +89,33 @@ class Music:
 
     char_limit_suggest = 160
 
+    song_prefix = dict()
+
     def __init__(self, bot):
         self.bot = bot
-        self.song_play = '!play'
+        self.song_play = 'play'
         self.voice_states = {}
+
+        self.song_prefix['default'] = '!'
 
         self.id_admin = '144803988963983360'
 
-    @commands.group(name='db', pass_context=True)
-    async def db(self, ctx):
-        """
-        Lets you queue songs from within Ruby Bot's database.
-        """
-        pass
+    @commands.command(pass_context=True, hidden=True)
+    @checks.is_owner()
+    async def custom(self, ctx, *, prefix: str='!'):
+        self.song_prefix[ctx.message.server.id] = prefix
+        await self.bot.say("Prefix '" + prefix + "' set for server " + ctx.message.server.name +".")
 
-    @db.command(name='title', pass_context=True)
-    async def title(self, ctx, *, title: str):
+    @commands.command(pass_context=True)
+    async def queue(self, ctx, *, title: str):
         """Searches the music database by title for a song.
         Queues it if a single matching song is found.
         If multiple songs match the search term, a list of matching titles is displayed.
-        :param title: Song title to search for
         """
 
+        await self.title(ctx, title)
+
+    async def title(self, ctx, title: str):
         output = utilities.fix_input(title)
         data = utilities.title(output[0])
         if len(data) == 0:
@@ -121,8 +126,25 @@ class Music:
         else:
             await self.process(ctx, data)
 
+    @commands.group(name='db', pass_context=True)
+    async def db(self, ctx):
+        """
+        Advanced queueing commands.
+        """
+        pass
+
+    @db.command(name='title', pass_context=True)
+    async def dbtitle(self, ctx, *, title: str):
+        """Searches the music database by title for a song.
+        Queues it if a single matching song is found.
+        If multiple songs match the search term, a list of matching titles is displayed.
+        :param title: Song title to search for
+        """
+
+        await self.title(ctx, title)
+
     @db.command(name='album', pass_context=True)
-    async def album(self, ctx, *, album: str):
+    async def dbalbum(self, ctx, *, album: str):
         """Searches the music database by title for an album.
         Queues all of it if a single matching album is found.
         If multiple albums match the search term, a list of matching albums is displayed.
@@ -204,7 +226,7 @@ class Music:
         Retrieves the current music database.
         """
         print('uploading')
-        await self.bot.upload(fp='files\music.db', content='Current database:')
+        await self.bot.upload(fp=os.path.join('files', 'music.db'), content='Current database:')
 
     async def pm_list(self, ctx, data):
         await self.print_table(ctx, self.search_results, self.get_song_info(data),
@@ -291,12 +313,19 @@ class Music:
         summoned_channel = None
         link = self.get_link(song)
         if not summoned_channel:
-            msg = await self.bot.say(self.song_play + ' ' + link)
-            await asyncio.sleep(self.delay_del_play)
-            await self.bot.delete_message(msg)
+            await self.play_url(ctx, link)
 
         else:
             await self.queue_music(ctx, link)
+
+    async def play_url(self, ctx, link):
+        try:
+            prefix = self.song_prefix[ctx.message.server.id] + self.song_play
+        except KeyError:
+            prefix = self.song_prefix['default'] + self.song_play
+        msg = await self.bot.say(prefix + ' ' + link)
+        await asyncio.sleep(self.delay_del_play)
+        await self.bot.delete_message(msg)
 
     def code(self, msg):
         return self.code_block + msg + self.code_block
@@ -454,7 +483,7 @@ class Music:
             except:
                 pass
 
-    @commands.command(pass_context=True, no_pm=True)
+    @commands.command(pass_context=True, no_pm=True, hidden=True)
     @checks.is_owner()
     async def join(self, ctx, *, channel: discord.Channel):
         """Joins a voice channel."""
@@ -467,7 +496,7 @@ class Music:
         else:
             await self.bot.say('Ready to play audio in ' + channel.name)
 
-    @commands.command(pass_context=True, no_pm=True)
+    @commands.command(pass_context=True, no_pm=True, hidden=True)
     @checks.is_owner()
     async def summon(self, ctx):
         """Summons the bot to join your voice channel."""
@@ -484,8 +513,7 @@ class Music:
 
         return True
 
-    @commands.command(pass_context=True, no_pm=True)
-    @checks.is_owner()
+    @commands.command(pass_context=True, no_pm=True, hidden=True)
     async def play(self, ctx, *, song: str):
         """Plays a song.
         If there is a song currently in the queue, then it is
@@ -494,7 +522,9 @@ class Music:
         The list of supported sites can be found here:
         https://rg3.github.io/youtube-dl/supportedsites.html
         """
-        await self.queue_music(ctx, song)
+        #await self.queue_music(ctx, song)
+        await self.bot.delete_message(ctx.message)
+        await self.play_url(ctx, song)
 
     async def queue_music(self, ctx, song: str):
         state = self.get_voice_state(ctx.message.server)
@@ -519,7 +549,8 @@ class Music:
             await self.bot.say('Enqueued ' + str(entry))
             await state.songs.put(entry)
 
-    @commands.command(pass_context=True, no_pm=True)
+    @commands.command(pass_context=True, no_pm=True, hidden=True)
+    @checks.is_owner()
     async def volume(self, ctx, value: int):
         """Sets the volume of the currently playing song."""
 
@@ -529,7 +560,7 @@ class Music:
             player.volume = value / 100
             await self.bot.say('Set the volume to {:.0%}'.format(player.volume))
 
-    @commands.command(pass_context=True, no_pm=True)
+    @commands.command(pass_context=True, no_pm=True, hidden=True)
     @checks.is_owner()
     async def pause(self, ctx):
         """Pauses the currently played song."""
@@ -538,7 +569,7 @@ class Music:
             player = state.player
             player.pause()
 
-    @commands.command(pass_context=True, no_pm=True)
+    @commands.command(pass_context=True, no_pm=True, hidden=True)
     @checks.is_owner()
     async def resume(self, ctx):
         """Resumes the currently played song."""
@@ -547,7 +578,8 @@ class Music:
             player = state.player
             player.resume()
 
-    @commands.command(pass_context=True, no_pm=True)
+    @commands.command(pass_context=True, no_pm=True, hidden=True)
+    @checks.is_owner()
     async def stop(self, ctx):
         """Stops playing audio and leaves the voice channel.
         This also clears the queue.
@@ -566,7 +598,8 @@ class Music:
         except:
             pass
 
-    @commands.command(pass_context=True, no_pm=True)
+    @commands.command(pass_context=True, no_pm=True, hidden=True)
+    @checks.is_owner()
     async def skip(self, ctx):
         """Vote to skip a song. The song requester can automatically skip.
         3 skip votes are needed for the song to be skipped.
@@ -592,7 +625,8 @@ class Music:
         else:
             await self.bot.say('You have already voted to skip this song.')
 
-    @commands.command(pass_context=True, no_pm=True)
+    @commands.command(pass_context=True, no_pm=True, hidden=True)
+    @checks.is_owner()
     async def playing(self, ctx):
         """Shows info about the currently played song."""
 
