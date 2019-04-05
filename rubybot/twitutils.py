@@ -37,14 +37,14 @@ def get_links(status):
         links = i_status['entities']['urls']
     except (AttributeError, KeyError):
         links = status.entities['urls']
-
+    '''
     try:
         for link in links:
             ext = link['expanded_url']
             links.extend(linkutils.get_link(ext))
     except AttributeError:
         pass
-
+    '''
     return links
 
 
@@ -136,14 +136,14 @@ def get_images(status):
         urls = i_status['entities']['urls']
     except (AttributeError, KeyError):
         urls = status.entities['urls']
-
+    '''
     try:
         for link in urls:
             ext = link['expanded_url']
             links.extend(linkutils.get_link(ext))
     except AttributeError:
         pass
-
+    '''
     return links
 
 
