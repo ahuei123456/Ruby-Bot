@@ -1,5 +1,9 @@
-import tweepy, time, html, urllib.request, os, re, bs4, requests
-from cogs.utils import utilities
+from rubybot.utils import utilities
+import html
+import os
+import time
+import tweepy
+import urllib.request
 
 user_encode = ["Username: {0.screen_name}",
                 "Display name: {0.name}",
@@ -50,6 +54,7 @@ class TweetListener(tweepy.StreamListener):
         self.statuses.clear()
         return statuses
 
+
 def init_twitter():
     global api_twitter
     global auth
@@ -78,7 +83,7 @@ def init_stream(id):
 
     listener = TweetListener(id)
     poster = tweepy.Stream(auth=auth, listener=listener)
-    poster.filter(follow=id, track=['#千歌ちゃんクソコラグランプリ'], async=True)
+    poster.filter(follow=id, track=['#千歌ちゃんクソコラグランプリ'], is_async=True)
 
 
 def kill_stream():
@@ -94,7 +99,7 @@ def restart_stream(id):
 
     listener = TweetListener(id)
     poster = tweepy.Stream(auth=auth, listener=listener)
-    poster.filter(follow=id, track=['#千歌ちゃんクソコラグランプリ'], async=True)
+    poster.filter(follow=id, track=['#千歌ちゃんクソコラグランプリ'], is_async=True)
 
 
 def stream_new_tweets():

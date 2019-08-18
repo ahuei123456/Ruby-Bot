@@ -1,6 +1,9 @@
 from discord.ext import commands
-from cogs.utils import utilities, checks, texttable
-import asyncio, os, urllib.request
+from rubybot.utils import utilities, checks, texttable
+import asyncio
+import os
+import urllib.request
+
 
 class Administrative:
 

@@ -1,10 +1,8 @@
-import asyncio
-import codecs
-
 from discord.ext import commands
-from cogs.utils import llparser, checks
-from cogs.utils import twitconn
-import linkutils, discordutils
+from rubybot.utils import llparser, checks
+from rubybot.utils import twitconn
+from seiutils import linkutils, discordutils
+
 
 class Info:
     max_char = 2000
@@ -17,22 +15,22 @@ class Info:
         self.bot = bot
 
     @commands.group(name='lyrics', pass_context=True, invoke_without_command=True)
-    async def lyrics(self, ctx, *, title:str):
+    async def lyrics(self, ctx, *, title: str):
         """
         Retrieves lyrics of a Love Live! song.
         Defaults to romaji if no language is specified.
         :param title: Title of the song to retrieve lyrics for. Currently, the match must be exact with the title given on the wikia.
         """
         if ctx.invoked_subcommand is None:
-            await self.get_lyrics(title)
+            await self.get_lyrics(ctx, title)
 
     @lyrics.command(name='romaji', pass_context=True)
-    async def romaji(self, ctx, *, title:str):
+    async def romaji(self, ctx, *, title: str):
         """
         Retrieves lyrics of a Love Live! song in Romaji.
         :param title: Title of the song to retrieve lyrics for. Currently, the match must be exact with the title given on the wikia.
         """
-        await self.get_lyrics(title, llparser.lyrics_lang[0])
+        await self.get_lyrics(ctx, title, llparser.lyrics_lang[0])
 
     @lyrics.command(name='kanji', pass_context=True)
     async def kanji(self, ctx, *, title: str):
@@ -40,7 +38,7 @@ class Info:
         Retrieves lyrics of a Love Live! song in Kanji.
         :param title: Title of the song to retrieve lyrics for. Currently, the match must be exact with the title given on the wikia.
         """
-        await self.get_lyrics(title, llparser.lyrics_lang[1])
+        await self.get_lyrics(ctx, title, llparser.lyrics_lang[1])
 
     @lyrics.command(name='english', pass_context=True)
     async def english(self, ctx, *, title: str):
@@ -48,24 +46,24 @@ class Info:
         Retrieves lyrics of a Love Live! song in English.
         :param title: Title of the song to retrieve lyrics for. Currently, the match must be exact with the title given on the wikia.
         """
-        await self.get_lyrics(title, llparser.lyrics_lang[2])
+        await self.get_lyrics(ctx, title, llparser.lyrics_lang[2])
 
     @lyrics.command(name='update', hidden=True)
     @checks.is_owner()
-    async def update(self):
+    async def update(self, ctx):
         """
         Updates lyrics crawling.
         """
         llparser.wikia_crawl()
-        await self.bot.say("Lyrics database updated!")
+        await ctx.send("Lyrics database updated!")
 
-    async def get_lyrics(self, title:str, language:str=None):
+    async def get_lyrics(self, ctx, title: str, language: str = None):
         try:
             msgs = self.parse_lyrics(llparser.get_lyrics(title, language))
             for msg in msgs:
-                await self.bot.say(msg)
+                await ctx.send(msg)
         except ValueError as e:
-            await self.bot.say(e)
+            await ctx.send(e)
 
     def parse_lyrics(self, info):
         msgs = list()

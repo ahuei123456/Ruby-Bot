@@ -2,8 +2,7 @@ import random
 import os
 import json
 
-from cogs.utils import dbconn
-from cogs.utils.dbconn import MusicLinker
+import rubybot
 
 args_full = ['-id', '-t', '-ar', '-su', '-al', '-an', '-yr', '-ss', '-st', '-ln', '-rm', '-tn', '-or', '-c', '-rr', '-rn']
 
@@ -114,6 +113,7 @@ def get_playlist(name, owner):
         raise ValueError('No playlist found!')
     return playlist
 
+
 def get_playlist_list(owner):
     playlists = music.playlist_list(owner.id)
     if playlists is None or len(playlists) == 0:
@@ -203,9 +203,14 @@ def finish(id: int, reason: str):
 
 
 def load_credentials():
-    path = os.path.join(os.getcwd(), 'files', 'credentials.json')
+    path = os.path.join(os.getcwd(), 'conf', 'credentials.json')
     with open(path) as f:
-        return json.load(f)
+        all = json.load(f)
+        if rubybot.debug:
+            return all['test']
+        else:
+            return all['live']
+
 
 def addsong(rawinfo):
     info = list()
@@ -228,7 +233,7 @@ def addsong(rawinfo):
 
 
 def load_list():
-    path = os.path.join(os.getcwd(), 'files', 'credentials.json')
+    path = os.path.join(os.getcwd(), 'conf', 'credentials.json')
     with open(path, 'r+') as f:
         data = json.load(f)
 
@@ -243,4 +248,4 @@ def is_dm(msg):
     return False
 
 
-music = MusicLinker(os.path.join('files', 'music.db'))
+#music = MusicLinker(os.path.join('files', 'music.db'))
