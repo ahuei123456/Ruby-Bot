@@ -1,10 +1,8 @@
 from utils import checks, utilities
 from discord.errors import Forbidden, InvalidArgument
 from discord.ext import commands
-#from seiutils import discordutils, twitutils
-import discordutils
-import twitutils
-from threading import Lock
+from seiutils import discordutils, twitutils
+from threading import Lock, Thread
 import asyncio
 import json
 import logging
@@ -94,11 +92,16 @@ class Twitter(commands.Cog):
 
     def _start_stream(self):
         self.logger.info('Starting tweepy stream')
-        self.tweet_stream.filter(follow=self.follows, is_async=True)
+        self.thread_stream = Thread(target=self._stream)
+        self.thread_stream.start()
+
+    def _stream(self):
+        self.tweet_stream.filter(follow=self.follows)
 
     def _kill_stream(self):
         self.logger.info('Killing tweepy stream')
         self.tweet_stream.disconnect()
+        self.thread_stream.join()
 
     def _init_follows(self):
         self.follows = list(self.destinations['destinations'].keys())
@@ -142,7 +145,7 @@ class Twitter(commands.Cog):
 
     def _update_json(self):
         self._init_follows()
-        path = os.path.join(os.getcwd(), 'files', 'tweets.json')
+        path = os.path.join(os.getcwd(), 'data', 'tweets.json')
         with open(path, 'w') as f:
             f.seek(0)  # <--- should reset file position to the beginning.
             json.dump(self.destinations, f, indent=4)
@@ -156,7 +159,7 @@ class Twitter(commands.Cog):
             targets = self.destinations['destinations']
             while len(statuses) > 0:
                 status = statuses.pop(0)
-                user_id = status.user.id
+                user_id = status.user.id_str
 
                 embed = discordutils.embed_tweet(status)
 
@@ -169,8 +172,8 @@ class Twitter(commands.Cog):
                     if channel in self.destinations['blacklist']:
                         continue
                     try:
-                        channel = self.bot.get_channel(channel)
-                        await channel.send_message(embed=embed)
+                        channel = self.bot.get_channel(int(channel))
+                        await channel.send(embed=embed)
                     except Forbidden as e:
                         logger.error(f'Forbidden to post in channel {channel}')
                         logger.error(f'{e}')
