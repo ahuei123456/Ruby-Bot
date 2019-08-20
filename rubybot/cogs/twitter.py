@@ -3,6 +3,9 @@ from discord.errors import Forbidden, InvalidArgument
 from discord.ext import commands
 from seiutils import discordutils, twitutils
 from threading import Lock, Thread
+from requests.exceptions import Timeout, ConnectionError
+from urllib3.exceptions import ReadTimeoutError, ProtocolError
+from ssl import SSLError
 import asyncio
 import json
 import logging
@@ -96,7 +99,16 @@ class Twitter(commands.Cog):
         self.thread_stream.start()
 
     def _stream(self):
-        self.tweet_stream.filter(follow=self.follows)
+        try:
+            self.tweet_stream.filter(follow=self.follows)
+        except (Timeout, SSLError, ReadTimeoutError, ConnectionError, ProtocolError) as e:
+            logging.warning("Network error occurred. Keep calm and carry on.", f'{e}')
+        except Exception as e:
+            logging.error("Unexpected error occured.", f'{e}')
+        finally:
+            logging.info("Stream crashed. Restarting stream.")
+
+        self._start_stream()
 
     def _kill_stream(self):
         self.logger.info('Killing tweepy stream')
