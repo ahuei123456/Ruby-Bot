@@ -3,7 +3,7 @@ from utils import utilities
 import logging
 import re
 
-debug = True
+debug = False
 information = "Welcome to Ruby Bot 2.0! Now rewritten to (hopefully) crash less and require less restarts."
 initial_extensions = ['cogs.twitter']
 logger = logging.getLogger(__name__)
