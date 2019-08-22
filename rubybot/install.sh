@@ -1,6 +1,7 @@
 #!/bin/bash
 
 # Install Dependencies
+python3 -m pip install discord.py
 pip3 install -U async
 pip3 install -U discord.py
 pip3 install -U tweepy
