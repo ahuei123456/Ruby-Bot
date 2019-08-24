@@ -10,6 +10,7 @@ import asyncio
 import json
 import logging
 import os
+import time
 import tweepy
 
 
@@ -102,12 +103,13 @@ class Twitter(commands.Cog):
         try:
             self.tweet_stream.filter(follow=self.follows)
         except (Timeout, SSLError, ReadTimeoutError, ConnectionError, ProtocolError) as e:
-            logging.warning("Network error occurred. Keep calm and carry on.", f'{e}')
+            logging.exception("Network error occurred. Keep calm and carry on.")
         except Exception as e:
-            logging.error("Unexpected error occured.", f'{e}')
+            logging.exception("Unexpected error occured.")
         finally:
             logging.info("Stream crashed. Restarting stream.")
 
+        time.sleep(5)
         self._start_stream()
 
     def _kill_stream(self):
