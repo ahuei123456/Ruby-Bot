@@ -95,9 +95,10 @@ class Twitter(commands.Cog):
         self.tweet_stream = tweepy.Stream(auth=self.auth, listener=self.listener)
 
     def _start_stream(self):
-        self.logger.info('Starting tweepy stream')
-        self.thread_stream = Thread(target=self._stream)
-        self.thread_stream.start()
+        if self.thread_stream is None:
+            self.logger.info('Starting tweepy stream')
+            self.thread_stream = Thread(target=self._stream)
+            self.thread_stream.start()
 
     def _stream(self):
         try:
@@ -116,6 +117,7 @@ class Twitter(commands.Cog):
         self.logger.info('Killing tweepy stream')
         self.tweet_stream.disconnect()
         self.thread_stream.join()
+        self.thread_stream = None
 
     def _init_follows(self):
         self.follows = list(self.destinations['destinations'].keys())
