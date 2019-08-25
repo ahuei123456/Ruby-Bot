@@ -93,6 +93,7 @@ class Twitter(commands.Cog):
     def _init_stream(self):
         self.listener = TweetListener()
         self.tweet_stream = tweepy.Stream(auth=self.auth, listener=self.listener)
+        self.thread_stream = None
 
     def _start_stream(self):
         if self.thread_stream is None:
