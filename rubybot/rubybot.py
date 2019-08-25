@@ -26,7 +26,7 @@ async def on_message(message):
     # (i.e. is not hidden inside a word), then we correct the person. The letter "s" is optional.
     if re.search(r"(?<![a-zA-Z])aquor(s?)(?![a-zA-Z])", msg) is not None:
         ctx = await bot.get_context(message)
-        await ctx.send_message("***AQOURS***")
+        await ctx.send("***AQOURS***")
 
     await bot.process_commands(message)
 
