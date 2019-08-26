@@ -49,12 +49,16 @@ class TweetListener(tweepy.StreamListener):
 
         return statuses
 
+    def return_statuses(self, statuses):
+        pass
+
 
 class Twitter(commands.Cog):
     def __init__(self, bot):
         self.logger = logging.getLogger(f'{__name__}.Twitter')
         self.bot = bot
-        self.loop = None
+        self.retrieve_loop = None
+        self.start_lock = Lock()
         self.destinations = None
 
         path = os.path.join(os.getcwd(), 'data', 'tweets.json')
@@ -64,15 +68,12 @@ class Twitter(commands.Cog):
         self._init_api()
         self._init_follows()
         self._init_stream()
+        self._start_stream()
+        self._start_restart_loop()
 
         @bot.event
         async def on_ready():
-            self._start_stream()
             await self._start_retrieve_loop()
-
-        @bot.event
-        async def on_resumed():
-            self._restart_stream()
 
     def _init_api(self):
         credentials = utilities.load_credentials()['twitter']
@@ -96,10 +97,9 @@ class Twitter(commands.Cog):
         self.thread_stream = None
 
     def _start_stream(self):
-        if self.thread_stream is None:
-            self.logger.info('Starting tweepy stream')
-            self.thread_stream = Thread(target=self._stream)
-            self.thread_stream.start()
+        self.logger.info('Starting tweepy stream')
+        self.thread_stream = Thread(target=self._stream)
+        self.thread_stream.start()
 
     def _stream(self):
         try:
@@ -111,8 +111,52 @@ class Twitter(commands.Cog):
         finally:
             logging.info("Stream crashed. Restarting stream.")
 
-        time.sleep(5)
-        self._start_stream()
+    def _start_restart_loop(self):
+        self.restart_loop = Thread(target=self._stream_restart_loop)
+        self.restart_loop.start()
+
+    def _stream_restart_loop(self):
+        while True:
+            with self.start_lock:
+                if not self._is_alive():
+                    self._start_stream()
+
+            time.sleep(240)
+
+    async def _start_retrieve_loop(self):
+        if self.retrieve_loop is None:
+            self.retrieve_loop = asyncio.get_event_loop()
+            self.retrieve_loop.create_task(self._retrieve_loop())
+
+    async def _retrieve_loop(self):
+        while True:
+            if self.bot.user is not None:
+                statuses = self.listener.get_statuses()
+                targets = self.destinations['destinations']
+                while len(statuses) > 0:
+                    status = statuses.pop(0)
+                    user_id = status.user.id_str
+
+                    embed = discordutils.embed_tweet(status)
+
+                    try:
+                        channels = targets[user_id]
+                    except KeyError:
+                        continue
+
+                    for channel in channels:
+                        if channel in self.destinations['blacklist']:
+                            continue
+                        try:
+                            channel = self.bot.get_channel(int(channel))
+                            await channel.send(embed=embed)
+                        except Forbidden as e:
+                            logger.error(f'Forbidden to post in channel {channel}')
+                            logger.error(f'{e}')
+                        except InvalidArgument as e:
+                            logger.error(f'{e}')
+
+            await asyncio.sleep(1)
 
     def _kill_stream(self):
         self.logger.info('Killing tweepy stream')
@@ -125,7 +169,12 @@ class Twitter(commands.Cog):
 
     def _restart_stream(self):
         self._kill_stream()
-        self._start_stream()
+
+        with self.start_lock:
+            self._start_stream()
+
+    def _is_alive(self):
+        return self.thread_stream is not None and self.thread_stream.is_alive()
 
     def _add_channel(self, user, channel_id):
         twitter_id = user.id_str
@@ -174,35 +223,6 @@ class Twitter(commands.Cog):
         status_id = status_url.split('/')
         status = self.twitter.get_status(status_id[-1], tweet_mode='extended')
         return status
-
-    async def _start_retrieve_loop(self):
-        while True:
-            statuses = self.listener.get_statuses()
-            targets = self.destinations['destinations']
-            while len(statuses) > 0:
-                status = statuses.pop(0)
-                user_id = status.user.id_str
-
-                embed = discordutils.embed_tweet(status)
-
-                try:
-                    channels = targets[user_id]
-                except KeyError:
-                    continue
-
-                for channel in channels:
-                    if channel in self.destinations['blacklist']:
-                        continue
-                    try:
-                        channel = self.bot.get_channel(int(channel))
-                        await channel.send(embed=embed)
-                    except Forbidden as e:
-                        logger.error(f'Forbidden to post in channel {channel}')
-                        logger.error(f'{e}')
-                    except InvalidArgument as e:
-                        logger.error(f'{e}')
-
-            await asyncio.sleep(1)
 
     @commands.command(hidden=True)
     @checks.is_owner()
