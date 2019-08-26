@@ -170,6 +170,11 @@ class Twitter(commands.Cog):
     def _get_user(self, info):
         return self.twitter.get_user(info)
 
+    def _parse_input(self, status_url):
+        status_id = status_url.split('/')
+        status = self.twitter.get_status(status_id[-1], tweet_mode='extended')
+        return status
+
     async def _start_retrieve_loop(self):
         while True:
             statuses = self.listener.get_statuses()
@@ -222,6 +227,21 @@ class Twitter(commands.Cog):
             await ctx.send(f'Added user {user.screen_name} to channel {ctx.message.channel.name} follow queue!')
         else:
             await ctx.send(f'Added user {user.screen_name} to channel {ctx.message.channel.name} unfollow queue!')
+
+    @commands.command(hidden=True)
+    @checks.is_owner()
+    async def alive(self, ctx):
+        if self.thread_stream is not None and self.thread_stream.is_alive():
+            await ctx.send(f'Twitter alive')
+        else:
+            await ctx.send(f'Twitter dead')
+
+    @commands.command(hidden=True)
+    @checks.is_owner()
+    async def get(self, ctx, status_url: str):
+        status = self._parse_input(status_url)
+        embed = discordutils.embed_tweet(status)
+        await ctx.send(embed=embed)
 
     @stalk.command(name='list', pass_context=True, hidden=True)
     async def slist(self, ctx):
