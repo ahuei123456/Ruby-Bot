@@ -1,5 +1,5 @@
 from utils import checks, utilities
-from discord.errors import Forbidden, InvalidArgument
+from discord.errors import Forbidden, InvalidArgument, HTTPException
 from discord.ext import commands
 from seiutils import discordutils, twitutils
 from threading import Lock, Thread
@@ -144,17 +144,20 @@ class Twitter(commands.Cog):
                     except KeyError:
                         continue
 
-                    for channel in channels:
-                        if channel in self.destinations['blacklist']:
-                            continue
-                        try:
-                            channel = self.bot.get_channel(int(channel))
-                            await channel.send(embed=embed)
-                        except Forbidden as e:
-                            logger.error(f'Forbidden to post in channel {channel}')
-                            logger.error(f'{e}')
-                        except InvalidArgument as e:
-                            logger.error(f'{e}')
+                    try:
+                        for channel in channels:
+                            if channel in self.destinations['blacklist']:
+                                continue
+                            try:
+                                channel = self.bot.get_channel(int(channel))
+                                await channel.send(embed=embed)
+                            except Forbidden as e:
+                                logger.error(f'Forbidden to post in channel {channel}')
+                                logger.error(f'{e}')
+                            except InvalidArgument as e:
+                                logger.error(f'{e}')
+                    except HTTPException:
+                        self.logger.error(f'tweet {status.user.id_str} too long')
 
             await asyncio.sleep(1)
 
