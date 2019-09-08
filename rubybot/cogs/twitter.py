@@ -157,7 +157,7 @@ class Twitter(commands.Cog):
                             except InvalidArgument as e:
                                 logger.error(f'{e}')
                     except HTTPException:
-                        self.logger.error(f'tweet {status.user.id_str} too long')
+                        self.logger.error(f'tweet {status.id} too long')
 
             await asyncio.sleep(1)
 
