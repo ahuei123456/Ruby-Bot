@@ -149,8 +149,10 @@ class Twitter(commands.Cog):
                             if channel in self.destinations['blacklist']:
                                 continue
                             try:
-                                channel = self.bot.get_channel(int(channel))
-                                await channel.send(embed=embed)
+                                discord_channel = self.bot.get_channel(int(channel))
+                                await discord_channel.send(embed=embed)
+                            except AttributeError as e:
+                                self._try_blacklist_channel(channel)
                             except Forbidden as e:
                                 logger.error(f'Forbidden to post in channel {channel}')
                                 logger.error(f'{e}')
@@ -202,6 +204,20 @@ class Twitter(commands.Cog):
             if channel_id in channels:
                 channels.remove(channel_id)
                 self._update_json()
+                return True
+            channels.append(channel_id)
+        except KeyError:
+            channels = [channel_id, ]
+            self.destinations['blacklist'] = channels
+
+        self._update_json()
+
+        return False
+
+    def _try_blacklist_channel(self, channel_id):
+        try:
+            channels = self.destinations['blacklist']
+            if channel_id in channels:
                 return True
             channels.append(channel_id)
         except KeyError:
