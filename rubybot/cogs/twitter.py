@@ -30,6 +30,9 @@ class TweetListener(tweepy.StreamListener):
             if twitutils.is_reply(status):
                 return
 
+            if twitutils.get_text(status).startswith('@'):
+                return
+
             with self.lock:
                 self.statuses.append(status)
 
