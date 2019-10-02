@@ -1,11 +1,10 @@
 from discord.ext import commands
 from utils import utilities
 import logging
-import re
 
 debug = False
 information = "Welcome to Ruby Bot 2.0! Now rewritten to (hopefully) crash less and require less restarts."
-initial_extensions = ['cogs.twitter']
+initial_extensions = ['cogs.filterer']
 logger = logging.getLogger(__name__)
 
 if debug:
@@ -17,18 +16,6 @@ else:
 @bot.event
 async def on_ready():
     logger.info(f'Logged in as:\n{bot.user} (ID: {bot.user.id})')
-
-
-@bot.event
-async def on_message(message):
-    msg = message.content.lower()
-    # If the string contains "aquors" and is NOT preceded by a letter and is NOT followed by a letter
-    # (i.e. is not hidden inside a word), then we correct the person. The letter "s" is optional.
-    if re.search(r"(?<![a-zA-Z])aquor(s?)(?![a-zA-Z])", msg) is not None:
-        ctx = await bot.get_context(message)
-        await ctx.send("***AQOURS***")
-
-    await bot.process_commands(message)
 
 
 if __name__ == "__main__":
