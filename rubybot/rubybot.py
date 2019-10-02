@@ -4,7 +4,7 @@ import logging
 
 debug = False
 information = "Welcome to Ruby Bot 2.0! Now rewritten to (hopefully) crash less and require less restarts."
-initial_extensions = ['cogs.filterer', 'cogs.admin']
+initial_extensions = ['cogs.filterer', 'cogs.twitter', 'cogs.admin']
 logger = logging.getLogger(__name__)
 
 if debug:
