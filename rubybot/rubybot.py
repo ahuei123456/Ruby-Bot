@@ -4,7 +4,7 @@ import logging
 
 debug = False
 information = "Welcome to Ruby Bot 2.0! Now rewritten to (hopefully) crash less and require less restarts."
-initial_extensions = ['cogs.filterer', 'cogs.twitter', 'cogs.admin']
+initial_extensions = ['cogs.filterer', 'cogs.admin']
 logger = logging.getLogger(__name__)
 
 if debug:
@@ -22,6 +22,8 @@ async def on_ready():
 async def on_message(message):
     if message.author.bot:
         return
+
+    await bot.process_commands(message)
 
 
 if __name__ == "__main__":
