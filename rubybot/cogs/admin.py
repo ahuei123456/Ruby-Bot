@@ -1,5 +1,5 @@
 from discord.ext import commands
-from utilities import checks
+from utils import checks
 
 
 class Admin(commands.Cog):
@@ -8,7 +8,7 @@ class Admin(commands.Cog):
 
     @commands.command()
     @checks.is_owner()
-    async def kill(self, ctx):
+    async def sudoku(self, ctx):
         await ctx.send("Bye bye")
         exit(0)
 
