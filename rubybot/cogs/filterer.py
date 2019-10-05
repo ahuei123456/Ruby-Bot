@@ -51,7 +51,7 @@ class Filterer(commands.Cog):
 
     @commands.Cog.listener()
     async def on_message(self, message):
-        if message.author.id != self.bot.user.id:
+        if not message.author.bot:
             content = message.content
 
             for f in self.filters.values():
