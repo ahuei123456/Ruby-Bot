@@ -52,7 +52,7 @@ class Filterer(commands.Cog):
     @commands.Cog.listener()
     async def on_message(self, message):
         if not message.author.bot:
-            content = message.content
+            content = message.content.lower()
 
             for f in self.filters.values():
                 if f.check.search(content) is not None:
