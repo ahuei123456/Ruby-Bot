@@ -6,7 +6,7 @@ debug = False
 information = "Welcome to Ruby Bot 2.0! Now rewritten to (hopefully) crash less and require less restarts."
 initial_extensions = ['cogs.filterer', 'cogs.twitter', 'cogs.admin']
 logger = logging.getLogger(__name__)
-logging.basicConfig(level=logging.DEBUG, filename='data/output.log')
+logging.basicConfig(level=logging.INFO, filename='data/output.log')
 
 if debug:
     bot = commands.Bot(command_prefix=commands.when_mentioned_or('+'), description=information)
