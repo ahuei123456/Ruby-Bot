@@ -157,10 +157,10 @@ class Twitter(commands.Cog):
                             except AttributeError as e:
                                 self._try_blacklist_channel(channel)
                             except Forbidden as e:
-                                logger.error(f'Forbidden to post in channel {channel}')
-                                logger.error(f'{e}')
+                                self.logger.error(f'Forbidden to post in channel {channel}')
+                                self.logger.error(f'{e}')
                             except InvalidArgument as e:
-                                logger.error(f'{e}')
+                                self.logger.error(f'{e}')
                     except HTTPException:
                         self.logger.error(f'tweet {status.id} too long')
 
