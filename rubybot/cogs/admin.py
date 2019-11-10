@@ -1,5 +1,5 @@
 from discord.ext import commands
-from utils import checks
+from rubybot.utils import checks
 
 
 class Admin(commands.Cog):

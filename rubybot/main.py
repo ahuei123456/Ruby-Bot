@@ -1,14 +1,20 @@
 from discord.ext import commands
-from utils import utilities
+from rubybot.utils import utilities
+import json
 import logging
+import os
 
-debug = False
+with open(os.path.join(os.getcwd(), 'rubybot', 'conf', 'test.json')) as f:
+    data = json.load(f)
+
+os.environ['TEST'] = data['test']
+
 information = "Welcome to Ruby Bot 2.0! Now rewritten to (hopefully) crash less and require less restarts."
-initial_extensions = ['cogs.filterer', 'cogs.twitter', 'cogs.admin']
+initial_extensions = ['rubybot.cogs.filterer', 'rubybot.cogs.twitter', 'rubybot.cogs.admin']
+logging.basicConfig(level=logging.INFO, filename=os.path.join(os.getcwd(), 'rubybot', 'data', 'output.log'))
 logger = logging.getLogger(__name__)
-logging.basicConfig(level=logging.INFO, filename='data/output.log')
 
-if debug:
+if int(os.environ['TEST']) == 1:
     bot = commands.Bot(command_prefix=commands.when_mentioned_or('+'), description=information)
 else:
     bot = commands.Bot(command_prefix=commands.when_mentioned_or('~'), description=information)

@@ -2,7 +2,7 @@ from discord.ext import commands
 from dataclasses import dataclass
 from enum import Enum
 from typing import Pattern
-from utils import checks
+from rubybot.utils import checks
 import discord
 import logging
 import os

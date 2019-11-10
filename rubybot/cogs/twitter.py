@@ -1,4 +1,4 @@
-from utils import checks, utilities
+from rubybot.utils import checks, utilities
 from discord.errors import Forbidden, InvalidArgument, HTTPException
 from discord.ext import commands
 from seiutils import discordutils, twitutils
@@ -15,6 +15,8 @@ import tweepy
 
 
 logger = logging.getLogger(__name__)
+
+TWEETS = os.path.join(os.getcwd(), 'rubybot', 'data', 'tweets.json')
 
 
 class TweetListener(tweepy.StreamListener):
@@ -64,7 +66,7 @@ class Twitter(commands.Cog):
         self.start_lock = Lock()
         self.destinations = None
 
-        path = os.path.join(os.getcwd(), 'data', 'tweets.json')
+        path = TWEETS
         with open(path) as f:
             self.destinations = json.load(f)
 
@@ -92,7 +94,9 @@ class Twitter(commands.Cog):
 
         self.twitter = tweepy.API(self.auth)
 
-        self.logger.info('Successfully logged into twitter')
+        me = self.twitter.me()
+
+        self.logger.info(f'Successfully logged into twitter as {me.screen_name}')
 
     def _init_stream(self):
         self.listener = TweetListener()

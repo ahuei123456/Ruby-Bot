@@ -2,7 +2,7 @@ import random
 import os
 import json
 
-import rubybot
+
 
 args_full = ['-id', '-t', '-ar', '-su', '-al', '-an', '-yr', '-ss', '-st', '-ln', '-rm', '-tn', '-or', '-c', '-rr', '-rn']
 
@@ -202,16 +202,6 @@ def finish(id: int, reason: str):
     return music.suggestion_finish(id, reason)
 
 
-def load_credentials():
-    path = os.path.join(os.getcwd(), 'conf', 'credentials.json')
-    with open(path) as f:
-        all = json.load(f)
-        if rubybot.debug:
-            return all['test']
-        else:
-            return all['live']
-
-
 def addsong(rawinfo):
     info = list()
     for i in range(0, len(rawinfo)):
@@ -230,6 +220,15 @@ def addsong(rawinfo):
         pass
 
     music.addsong(info)
+
+def load_credentials():
+    path = os.path.join(os.getcwd(), 'rubybot', 'conf', 'credentials.json')
+    with open(path) as f:
+        all = json.load(f)
+        if int(os.environ['TEST']) == 1:
+            return all['test']
+        else:
+            return all['live']
 
 
 def load_list():
