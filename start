@@ -1,0 +1,2 @@
+source venv/bin/activate
+nohup rubybot/main.py 1>rubybot/data/stdout.log 2>rubybot/data/stderr.log &
