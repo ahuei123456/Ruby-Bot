@@ -1,8 +1,12 @@
 from discord.ext import commands
-from rubybot.utils import utilities
 import json
 import logging
 import os
+import sys
+
+sys.path.insert(0, os.getcwd())
+
+from rubybot.utils import utilities
 
 with open(os.path.join(os.getcwd(), 'rubybot', 'conf', 'test.json')) as f:
     data = json.load(f)
