@@ -6,7 +6,7 @@ class Admin(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
-    @commands.command()
+    @commands.command(hidden=True)
     @checks.is_owner()
     async def sudoku(self, ctx):
         await ctx.send("Bye bye")

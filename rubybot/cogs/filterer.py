@@ -10,7 +10,7 @@ import pickle
 import re
 
 
-save_path = os.path.join(os.getcwd(), 'data', 'filters.json')
+save_path = os.path.join(os.getcwd(), 'rubybot', 'data', 'filters.json')
 
 
 class Action(Enum):
