@@ -14,7 +14,7 @@ with open(os.path.join(os.getcwd(), 'rubybot', 'conf', 'test.json')) as f:
 os.environ['TEST'] = data['test']
 
 information = "Welcome to Ruby Bot 2.0! Now rewritten to (hopefully) crash less and require less restarts."
-initial_extensions = ['rubybot.cogs.filterer', 'rubybot.cogs.twitter', 'rubybot.cogs.admin']
+initial_extensions = ['rubybot.cogs.filterer', 'rubybot.cogs.twitter', 'rubybot.cogs.admin', 'rubybot.cogs.info']
 logging.basicConfig(level=logging.INFO, filename=os.path.join(os.getcwd(), 'rubybot', 'data', 'output.log'))
 logger = logging.getLogger(__name__)
 
